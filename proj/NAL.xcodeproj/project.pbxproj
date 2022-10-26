@@ -1,0 +1,83 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXFileReference section */
+		90D823632909BA56009954A9 /* nal.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = nal.txt; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		90D8235B2909BA3C009954A9 = {
+			isa = PBXGroup;
+			children = (
+				90D823622909BA56009954A9 /* doc */,
+			);
+			sourceTree = "<group>";
+		};
+		90D823622909BA56009954A9 /* doc */ = {
+			isa = PBXGroup;
+			children = (
+				90D823632909BA56009954A9 /* nal.txt */,
+			);
+			name = doc;
+			path = ../doc;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		90D8235C2909BA3C009954A9 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1410;
+			};
+			buildConfigurationList = 90D8235F2909BA3C009954A9 /* Build configuration list for PBXProject "NAL" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 90D8235B2909BA3C009954A9;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		90D823602909BA3C009954A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		90D823612909BA3C009954A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		90D8235F2909BA3C009954A9 /* Build configuration list for PBXProject "NAL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				90D823602909BA3C009954A9 /* Debug */,
+				90D823612909BA3C009954A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 90D8235C2909BA3C009954A9 /* Project object */;
+}
