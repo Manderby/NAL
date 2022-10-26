@@ -1,6 +1,64 @@
 
-- no namespaces.
-- Forward declarations not necessary.
+Target groups:
+--------------
+- Target groups: Application programmers, Embedded programmers.
+- Not a target group: System programming. Too complicated. No chance this will ever work completely safe.
+
+
+
+Iron rules
+----------
+- keywords do never contain underscores.
+- keywords are always lowercase only and decimal digits.
+
+
+
+Quality goals:
+--------------
+- Compiler error messages must be easy to read.
+- Forward declarations not necessary. C-Header files including comments which are right before defined symbols will be automatically generated upon compilation. Needs proper definition of what is a "header" comment.
+- includes. Shall be detected or found by the compiler automatically. Requires common rules on how to find implementation/header files. Maybe belongs to the build system. Needs further thinking.
+
+
+
+Things to throw away
+--------------------
+- Ditch -> in favor of .
+- No more short, long, int.
+- No more char, use new keyword "letter" instead.
+- Ditch "float" for "f32" and "double" for "f64" and "long double" for f128.
+- No more postfix operators ++ --
+- Underscore _ is no character. Debatable, probably not. People get angry. m_member is no longer possible. SCREAMING_SNAKE_CASE no longer possible.
+- Replace do-while with a new keyword "dowhile". Put condition before {} Block.
+- No more comma operator.
+- Ditch unions.
+- Ditch Bitfields.
+- Disallow [] as type. Use new "array" type instead.
+
+
+
+Needs more brain thinking things.
+---------------------------------
+- Ditch Dereference operator. Do it implicitely.
+- no namespaces. Must be discussed further. Helps to find the proper space to look for errors. Needs to be looked at on how to include files. Maybe just one level, not multiple ones.
+- Type and variabel declaration/definition: Proposed is to put the variable first, then the type.
+
+
+
+Types:
+------
+- New type: "Byte"
+- New integer types: i8, i16, i32, i64, ... u8, u16, u32, u64, ...
+- New keyword "letter" for characters. Preferably UTF8
+- New types "f32" and "f64" which repalce float and double.
+- New type "bool", new keywords "true" and "false"
+- Make array a native type (name under discussion. Some like vec but opposition is dwindling. Namespaces are problematic here as well). Proposition for syntax: array[i32, 6] whereas i32 is a type and 6 is the number of elements in the array. An array is fixed size.
+
+
+
+Yet Uncategorized ideas:
+------------------------
+- string must be a language type.
 - Replace struct with class keyword.
 - Classes are automatically typedefd.
 - Classes store a type id given at runtime.
@@ -15,47 +73,67 @@
 - Interfaces can be implemented outside of class to enhance classes.
 - Disallow casts except base types and inherited pointer types.
 - Error all implicit casts.
-- Ditch Dereference. Do it implicitely.
-- Ditch -> in favor of .
 - Allocation can be with or without reference counted.
 - Initialization should look like myVariable = MyType(params);
 - Initialization from Allocation can be like ... = new MyType(...).
 - Initialization from a function result does not need a type.
 - Pointers are only created with new keyword.
-- No more postfix operators ++ --
-- Underscore _ is no character.
-- Disallow [] as type. Make array implementation.
 - Replace Pointer arithmetics with iterators.
 - Add yield and coroutine functionality.
-- Ditch do-while. Ditch unions, Ditch bitfields
 - nullptr is an object which can be cast to but never from.
 - Disallow void*. Add customType with runtime code generation with declareWithType. 
 - No templates otherwise.
 - Replace const optional with mutable explicit.
 - Make inlines inline always.
-- float becomes single. Ditch long double.
 - size_t becomes index.
-- No more short, long and char. int must be int32 or int64. Byte is uint8
 - bleed keyword makes variables available outside of current scope.
 - Do not allow reading from console. No scanf.
 - No ascii mode for file input or output.
 - Disallow tab character.
-- Promote using less {}
+- Promote using less {}. Probably not a totally good idea. Keep them but make them optional.
 - Variables are NOT initialized automatically.
 - Do not define multiple variables with ,
-- No more comma operator.
 - Add named parameters. Make them optional.
 - arguments and parameter names must be equal.
+- no asm
 
 
 
-for(i in [0, n])
+Some discussion points from the stream:
+---------------------------------------
+- Function overloading could be cool.
+- bleed bleed bleed is bad.
+- lifetime of bleed. See as an example: https://doc.rust-lang.org/rust-by-example/scope/lifetime.html
+- Variadic initialization. Needs discussion.
+- Adding a list implementation.
+
+
+
+
+
+// Playfield for implementation and syntax.
+// Just some brainfucks, do not take this too serious.
+// Don't look at it too closely. It's a dump.
+
+auto it = std::find_if(myArray.begin(), myArray.end(), [=](auto elem){return elem == nullptr;});
+size_t index = it.difference(myArray.begin());
+
+for (bleed index in myArray)
+  if(myArray[index] == nullptr) break;
+
+
+for(int i = 0; i < n; ++i, ++j){
+  doSomething();
+}
+
+for(i in [0, n]) {
+for(i in [myArray]) {
   doSometing();
+}
 
-
-
-for(mutable bleed i in myArray)
+for(bleed i in myArray) {
   if(myArray[i] == 10) break;
+}
 printf("Found 10 at index: %i", i);
 
 
@@ -72,13 +150,19 @@ myFunc = (arrayParam: array) double
 myFunc = (arrayParam: array) double{
   bleed size = i32(12345);
   mutable bleed length = i64(3333333);
-  yield 3.14;
+  yield 3.14; // return
 }
 
 myDouble
 , size:myInteger
 , mutable length:myLength
 : myFunc(myArray);
+
+const i32* _size;
+i64* _lenght;
+double myDouble = myFunc(myArray, _size, _lenght);
+
+
 
 _, index:myIndex = funcWithIgnoredReturnValue();
 
@@ -97,3 +181,29 @@ reftype MyType = MyBaseType & {
 
 myObject = new MyType;
 myObject.release;
+
+
+
+
+
+NAL:
+
+class myClass = baseClass & {
+  m_myInt = i32;
+
+  computeMeaningOfLife () i32;
+}
+
+extend myClass = myProtocol {
+  serialize(class){}
+}
+
+C:
+
+struct myClass{
+  baseClass firstMember;
+  int32 m_myInt;
+}
+
+int32 myClass_computeMeaningOfLife(myClass* this){}
+
