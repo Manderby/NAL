@@ -9,7 +9,8 @@ NAL is short for Not A Language. This has two meanings: It should be easy to cre
 
 Email: nal@manderc.com
 Follow on Twitter for latest developments: @Manderby52
-
+Streams may happen (at central european time CET) on Twitch:
+https://www.twitch.tv/manderby52
 
 
 
