@@ -1,0 +1,99 @@
+
+- no namespaces.
+- Forward declarations not necessary.
+- Replace struct with class keyword.
+- Classes are automatically typedefd.
+- Classes store a type id given at runtime.
+- Classes declare public and protected methods, never privates.
+- Classes have no implicit constructors or desctructors.
+- Allow method to be pure. Need overwrite.
+- this must be declared explicitely as a parameter.
+- PIMPL must be prevented.
+- Private methods must be present in the implementation file.
+- Allow single inheritance
+- Interfaces are extensions, not inheritance.
+- Interfaces can be implemented outside of class to enhance classes.
+- Disallow casts except base types and inherited pointer types.
+- Error all implicit casts.
+- Ditch Dereference. Do it implicitely.
+- Ditch -> in favor of .
+- Allocation can be with or without reference counted.
+- Initialization should look like myVariable = MyType(params);
+- Initialization from Allocation can be like ... = new MyType(...).
+- Initialization from a function result does not need a type.
+- Pointers are only created with new keyword.
+- No more postfix operators ++ --
+- Underscore _ is no character.
+- Disallow [] as type. Make array implementation.
+- Replace Pointer arithmetics with iterators.
+- Add yield and coroutine functionality.
+- Ditch do-while. Ditch unions, Ditch bitfields
+- nullptr is an object which can be cast to but never from.
+- Disallow void*. Add customType with runtime code generation with declareWithType. 
+- No templates otherwise.
+- Replace const optional with mutable explicit.
+- Make inlines inline always.
+- float becomes single. Ditch long double.
+- size_t becomes index.
+- No more short, long and char. int must be int32 or int64. Byte is uint8
+- bleed keyword makes variables available outside of current scope.
+- Do not allow reading from console. No scanf.
+- No ascii mode for file input or output.
+- Disallow tab character.
+- Promote using less {}
+- Variables are NOT initialized automatically.
+- Do not define multiple variables with ,
+- No more comma operator.
+- Add named parameters. Make them optional.
+- arguments and parameter names must be equal.
+
+
+
+for(i in [0, n])
+  doSometing();
+
+
+
+for(mutable bleed i in myArray)
+  if(myArray[i] == 10) break;
+printf("Found 10 at index: %i", i);
+
+
+
+while(i = [myArray].first)
+  i.next(2);
+  
+  
+
+myFunc = (arrayParam: array) double
+  bleed size = i32
+  mutable bleed length = i64;
+
+myFunc = (arrayParam: array) double{
+  bleed size = i32(12345);
+  mutable bleed length = i64(3333333);
+  yield 3.14;
+}
+
+myDouble
+, size:myInteger
+, mutable length:myLength
+: myFunc(myArray);
+
+_, index:myIndex = funcWithIgnoredReturnValue();
+
+
+
+reftype MyType = MyBaseType & {
+  i32 myPublicInt;
+  protected single mySingle;
+  
+  constructor MyType();
+  constructor MyType(initializingInteger = i32);
+  destructor;
+  
+  protected compute() double;
+}
+
+myObject = new MyType;
+myObject.release;
