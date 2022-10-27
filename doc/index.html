@@ -9,6 +9,14 @@
 
 
 
+<p>This is a living document for NAL (Not A Language).</p>
+
+<p>NAL shall be a language with the mindeset of C but safe and syntactically improved. Simpler, more readable, more streamlined. More restrictive but more straight-forward.</p>
+
+<p>Feel free to contribute. Discussions are what this is all about. It's fun to dream things!</p>
+
+
+
 <h2>Target groups</h2>
 
 <ul>
@@ -38,9 +46,20 @@
 
 
 
-<h2>Things to throw away</h2>
+<h2>Things to throw away from C</h2>
 
-<p>See <a href="throwaway/index.html">Here</a>.</p>
+<ul>
+<li>See <a href="throwaway/index.html">Here</a>.</li>
+</ul>
+
+
+
+<h2>New Concepts</h2>
+
+<ul>
+<li><a href="rangefor/index.html">Range <code>for</code></a></li>
+<li><a href="bleedkeyword/index.html"><code>bleed</code> Keyword</a></li>
+</ul>
 
 
 
@@ -72,6 +91,7 @@
 
 Yet Uncategorized ideas:
 ------------------------
+- Syntax examples of why Rust is worse than C: https://pastebin.com/c7gvYAWC
 - string must be a language type.
 - Replace struct with class keyword.
 - Classes are automatically typedefd.
@@ -99,7 +119,7 @@ Yet Uncategorized ideas:
 - No templates otherwise.
 - Replace const optional with mutable explicit.
 - Make inlines inline always.
-- size_t becomes index.
+- size_t becomes []. Needs a printf formatter %i.
 - bleed keyword makes variables available outside of current scope.
 - Do not allow reading from console. No scanf.
 - No ascii mode for file input or output.
@@ -109,7 +129,9 @@ Yet Uncategorized ideas:
 - Do not define multiple variables with ,
 - Add named parameters. Make them optional.
 - arguments and parameter names must be equal.
-- no asm
+- Variable shadowing is an error, not a warning.
+- Variadic arguments are not allowed anymore. Define built-in printf.
+- return for (i in myArray) { return static sum += myArray[i]; }
 
 
 
@@ -132,23 +154,6 @@ Some discussion points from the stream:
 auto it = std::find_if(myArray.begin(), myArray.end(), [=](auto elem){return elem == nullptr;});
 size_t index = it.difference(myArray.begin());
 
-for (bleed index in myArray)
-  if(myArray[index] == nullptr) break;
-
-
-for(int i = 0; i < n; ++i, ++j){
-  doSomething();
-}
-
-for(i in [0, n]) {
-for(i in [myArray]) {
-  doSometing();
-}
-
-for(bleed i in myArray) {
-  if(myArray[i] == 10) break;
-}
-printf("Found 10 at index: %i", i);
 
 
 
@@ -156,25 +161,6 @@ while(i = [myArray].first)
   i.next(2);
   
   
-
-myFunc = (arrayParam: array) double
-  bleed size = i32
-  mutable bleed length = i64;
-
-myFunc = (arrayParam: array) double{
-  bleed size = i32(12345);
-  mutable bleed length = i64(3333333);
-  yield 3.14; // return
-}
-
-myDouble
-, size:myInteger
-, mutable length:myLength
-: myFunc(myArray);
-
-const i32* _size;
-i64* _lenght;
-double myDouble = myFunc(myArray, _size, _lenght);
 
 
 

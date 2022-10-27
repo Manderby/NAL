@@ -10,6 +10,8 @@
 		909B52D6290A724D00C584C6 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		909B52D8290A724D00C584C6 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		909B52D9290A9C2700C584C6 /* css.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = css.css; sourceTree = "<group>"; };
+		909B52DB290AA2B200C584C6 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		909B52DD290AA6C500C584C6 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -18,6 +20,8 @@
 			children = (
 				909B52D9290A9C2700C584C6 /* css.css */,
 				909B52D6290A724D00C584C6 /* index.html */,
+				909B52DA290AA2B200C584C6 /* bleedkeyword */,
+				909B52DC290AA6C500C584C6 /* rangefor */,
 				909B52D7290A724D00C584C6 /* throwaway */,
 			);
 			name = doc;
@@ -30,6 +34,22 @@
 				909B52D8290A724D00C584C6 /* index.html */,
 			);
 			path = throwaway;
+			sourceTree = "<group>";
+		};
+		909B52DA290AA2B200C584C6 /* bleedkeyword */ = {
+			isa = PBXGroup;
+			children = (
+				909B52DB290AA2B200C584C6 /* index.html */,
+			);
+			path = bleedkeyword;
+			sourceTree = "<group>";
+		};
+		909B52DC290AA6C500C584C6 /* rangefor */ = {
+			isa = PBXGroup;
+			children = (
+				909B52DD290AA6C500C584C6 /* index.html */,
+			);
+			path = rangefor;
 			sourceTree = "<group>";
 		};
 		90D8235B2909BA3C009954A9 = {

@@ -27,6 +27,9 @@
 <li><a href="#bitfield">Bitfields</a></li>
 <li><a href="#arraytype">Array type <code>[]</code></a></li>
 <li><a href="#pointerarithmetic">Pointer arithmetics</a></li>
+<li><a href="#generalfor">General <code>for</code> loop declaration.</a></li>
+<li><a href="#goto"><code>goto</code> statement.</a></li>
+<li><a href="#asm"><code>asm</code> statement.</a></li>
 </ul>
 
 
@@ -286,6 +289,42 @@
 <li>This also eliminates one of the primary uses of the arithmetic <a href="#postfix">postfix operators <code>++</code> and <code>--</code></a> which we will ditch as well.</li>
 </ul>
 
+
+
+<h2 id="generalfor">General <code>for</code> loop declaration</h2>
+
+<p>The general declaration of a <code>for</code> loop in C like <code>for (init; condition; step)</code> will be removed. Instead, <code>for</code> loops shall only be used for <a href="../rangefor/index.html">range based loops</a>.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Range based loops have become the primary use of <code>for</code> loops.</li>
+<li>The three statements <code>init</code>, <code>condition</code> and <code>step</code> were often misused.</li>
+</ul>
+
+
+
+<h2 id="goto"><code>goto</code> statement</h2>
+
+<p>The <code>goto</code> statement has no more use. Remove it completely without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Pros Cons...</li>
+</ul>
+
+
+
+<h2 id="asm"><code>asm</code> statement</h2>
+
+<p>The <code>asm</code> statement shall be removed completely without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>NAL shall not target system programmers, so we do not do <code>asm</code>.</li>
+</ul>
 
 
 

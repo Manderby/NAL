@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="../css.css"/>
+</head>
+<body>
+
+
+<a href="../index.html">&lt;-- back</a>
+
+<h1>Range <code>for</code></h1>
+
+<p>The general declaration of a <code>for</code> loop in C like <code>for (init; condition; step)</code> will be removed. Instead, <code>for</code> loops shall only (ONLY!) be used for range based loops only:</p>
+
+<div class="twoCodes">
+  <div class="nalCode">
+    NAL:
+    for (i in myArray) {...}
+    for (i in [5 .. n]) {...}
+  </div>
+  <div class="cCode">
+    C:
+    for (size_t i = 0; i < _nalArraySize(myArray); ++i) {...}
+    for (size_t i = 5; i < n; ++i) {...}
+  </div>
+</div>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Syntax is similar to other languages like Python</li>
+<li class="important">Maybe even the round parantheses <code>()</code> can be removed? This is how it looks: <code>for i in myArray {...}</code></li>
+<li>Type of Index-Variable is absolutely clear.</li>
+<li>More complex loops have to be programmed with <code>while</code>.</li>
+</ul>
+
+
+
+
+</body>
+</html>
