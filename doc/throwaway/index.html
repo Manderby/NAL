@@ -1,0 +1,293 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="../css.css"/>
+</head>
+<body>
+
+
+<a href="../index.html">&lt;-- back</a>
+
+<h1>Things to throw away or replace</h1>
+
+<p>Remember, NAL shall be "transcodable" to C, therefore in this section, we show how things in NAL can be converted to C if removed or replaced.</p>
+
+<ul>
+<li><a href="#arrowoperator">Arrow operator <code>-&gt;</code></a></li>
+<li><a href="#inttypes"><code>short</code>, <code>long</code>, <code>int</code>, <code>signed</code>, <code>unsigned</code></a></li>
+<li><a href="#char"><code>char</code></a></li>
+<li><a href="#floats"><code>float</code>, <code>double</code> and <code>long double</code></a></li>
+<li><a href="#postfix">Postfix operators <code>++</code> and <code>--</code></a></li>
+<li class="badidea"><a href="#underscore">Underscore <code>_</code> as a symbol character</a></li>
+<li><a href="#dowhile"><code>do-while</code></a></li>
+<li><a href="#comma">Comma operator <code>,</code></a></li>
+<li><a href="#union"><code>union</code> Type</a></li>
+<li><a href="#bitfield">Bitfields</a></li>
+<li><a href="#arraytype">Array type <code>[]</code></a></li>
+<li><a href="#pointerarithmetic">Pointer arithmetics</a></li>
+</ul>
+
+
+
+<h2 id="arrowoperator">Arrow operator <code>-&gt;</code></h2>
+
+<p>Compilers know the type of a value and hence can automatically decide whether it is a pointer or not. No need to have two separate operators <code>-&gt;</code> and <code>.</code> therefore. To make code look like other programming languages, we favor the dot operator. Translating to C means automatically replacing the dot with an arrow if necessary.</p>
+
+<div class="twoCodes">
+  <div class="nalCode">
+    NAL:
+    myValue = MyType;
+    myPointer = *MyType; 
+    myValue.memberName;
+    myPointer.memberName;
+  </div>
+  <div class="cCode">
+    C:
+    MyType myValue;
+    MyType* myPointer;
+    myValue.memberName;
+    myPointer->memberName;
+  </div>
+</div>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Pros, Cons...</li>
+</ul>
+
+
+
+<h2 id="inttypes"><code>short</code>, <code>long</code>, <code>int</code>, <code>signed</code>, <code>unsigned</code></h2>
+
+<p>The type <code>int</code> and its modifiers <code>short</code> and <code>long</code> are system dependent. Additionally, the modifiers <code>signed</code> and <code>unsigned</code> are just cumbersome. We replace this all with built-in types:</p>
+
+<div class="twoCodes">
+  <div class="nalCode">
+    NAL:
+    i8
+    i16
+    i32
+    i64
+    ...
+  </div>
+  <div class="cCode">
+    C:
+    int8_t
+    int16_t
+    int32_t
+    int64_t
+    ...
+  </div>
+</div>
+
+<div class="twoCodes">
+  <div class="nalCode">
+    NAL:
+    u8
+    u16
+    u32
+    u64
+    ...
+  </div>
+  <div class="cCode">
+    C:
+    uint8_t
+    uint16_t
+    uint32_t
+    uint64_t
+    ...
+  </div>
+</div>
+
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Pros, Cons...</li>
+</ul>
+
+
+
+<h2 id="char"><code>char</code></h2>
+
+<p>In C, the type <code>char</code> has the semantics of storing one character. That is usually 1 Byte but not necessary, therefore system dependent. Additionally, <code>char</code> is accessible as a number which is semantically wrong. We replace the type with the following.</p>
+
+<div class="twoCodes">
+  <div class="nalCode">
+    NAL:
+    letter
+  </div>
+  <div class="cCode">
+    C:
+    char
+  </div>
+</div>
+
+<p>A <code>letter</code> is encoded in UTF-8. It is not accessible as a number, unless one uses converter methods like <code>myLetter.ToASCIINum()</code>.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li class="important">Instead of <code>letter</code>, how about <code>glyph</code>?</li>
+</ul>
+
+
+
+<h2 id="floats"><code>float</code>, <code>double</code> and <code>long double</code></h2>
+
+<p>We replace the floating point types of C with the following:</p>
+
+<div class="twoCodes">
+  <div class="nalCode">
+    NAL:
+    f32 
+    f64 
+    f128
+  </div>
+  <div class="cCode">
+    C:
+    float
+    double
+    long double (if available as 128 bit)
+  </div>
+</div>
+
+<p>And we allow for newer floating point types like <code>f16</code> (which would correspond to the IEEE-754 <code>half</code> type) or <code>f128</code> (which would correspond to the IEEE-754 <code>quad</code> type)</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Originaly, the proposal to use <code>single</code> and <code>double</code> was given but was quickly abandoned.</li>
+</ul>
+
+
+
+<h2 id="postfix">Postfix operators <code>++</code> and <code>--</code></h2>
+
+<p>There is a prefix and postfix variant of both <code>++</code> and <code>--</code>. The postfix variant has the semantics of changing the value AFTER its access. We do not allow for these variants anymore.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li class="important">Why not removing all Increment and Decrement operators. <code>i += 1</code> is not hard to write or even <code>i = i + 1</code>.</li>
+<li>Postfix operators are used favourably with pointer arithmetics. As we can not allow pointer arithmetics anymore, there is one more reason to let go.</li>
+<li>It is not hard for a programmer to rewrite a line of code such that a postfix operator is not necessary anymore.</li>
+<li>In C++, the postfix operator usually is also frowned upon as it complicates operator overloading.</li>
+</ul>
+
+
+
+<h2 id="underscore">Underscore <code>_</code> as a symbol character</h2>
+
+<p class="important">Discarded.</p>
+
+<p>Idea was to disallow the underscore <code>_</code> as a character in symbol names. Was smiled at by a few but frowned upon my many and overal.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>People get angry when it comes to naming conventions.</li>
+<li><code>snake_case</code> is debatably easier to read than <code>camelCase</code>.</li>
+<li><code>m_member</code> would not be possible anymore.</li>
+<li><code>SCREAMING_SNAKE_CASE</code> would not be possible anymore.</li>
+<li>There would basically only be two case possibilies to distinguish: <code>lowerCamelCase</code> and <code>UpperCamelCase</code>.</li>
+</ul>
+
+
+
+<h2 id="dowhile"><code>do-while</code></h2>
+
+<p>Replace <code>do-while</code> with a new keyword <code>dowhile</code>. Put condition before <code>{}</code> Block.</p>
+
+<div class="twoCodes">
+  <div class="nalCode">
+    NAL:
+    dowhile(condition) {
+      ...
+    }
+  </div>
+  <div class="cCode">
+    C:
+    do {
+      ...
+    } while (condition)
+  </div>
+</div>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Original idea was to remove <code>do-while</code> completely without replacement.</li>
+</ul>
+
+
+
+<h2 id="comma">Comma operator <code>,</code></h2>
+
+<p>There is no need for a comma operator. Erase it without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Pros, Cons...</li>
+</ul>
+
+
+
+<h2 id="union"><code>union</code> Type</h2>
+
+<p>There really isn't that much of purpose in having a <code>union</code> type. Erase it without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Unions might be handy when working with network protocols. But as NAL shall not target system programmers, that is not really an issue.</li>
+<li>Unions can be usefule to have either a const or non-const member (as done in NALib). But that might become obsolete with a better type system.</li>
+</ul>
+
+
+
+<h2 id="bitfield">Bitfields</h2>
+
+<p>There really isn't that much of purpose in having Bitfields. Erase it without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>NAL shall not target system programmers, that is not really an issue.</li>
+<li>People are accustomed to use masks on integer values.</li>
+</ul>
+
+
+
+<h2 id="arraytype">Array type <code>[]</code></h2>
+
+<p>Ditch the declaration with <code>[]</code> as it induces the usage of pointer arithmetic. Define a built-in <code>array</code> type instead.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>The <code>[]</code> type evaluates to a pointer to the first element of an array. That has no purpose if we aren't allowing pointer arithmetics anymore.</li>
+<li>Arrays must become safe.</li>
+</ul>
+
+
+
+<h2 id="pointerarithmetic">Pointer arithmetics</h2>
+
+<p>Pointer arithmetics are inherently unsafe. We need to get rid of it. The only real thing which needs to be replaced it the <a hreaf="#arraytype">array type <code>[]</code></a> which can be replaced by a bilt-in type <code>array</code>.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>This also eliminates one of the primary uses of the arithmetic <a href="#postfix">postfix operators <code>++</code> and <code>--</code></a> which we will ditch as well.</li>
+</ul>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+h1{
+  font-size:30pt;
+}
+
+h2{
+  margin-top:50pt;
+  font-size:20pt;
+}
+
+h3{
+  font-size:14pt;
+}
+
+code{
+  white-space:pre;
+}
+
+.important{
+  color:#800000;
+  background-color:#ffffcc;
+}
+
+.badidea{
+  text-decoration: line-through;
+}
+
+.twoCodes{
+  display:table
+}
+
+.nalCode{
+  display:table-cell;
+  white-space:pre;
+  font-family:Monospace;
+}
+
+.cCode{
+  display:table-cell;
+  white-space:pre;
+  font-family:Monospace;
+}
