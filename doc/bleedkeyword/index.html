@@ -62,6 +62,8 @@
 <code>auto it = std::find_if(myArray.begin(), myArray.end(), [=](const auto& elem){return elem == nullptr;});
 size_t index = it - myArray.begin();</code>
 </li>
+<li>bleed bleed bleed is not possible. Needs to be re-bleeded in the outer scope.</li>
+<li>lifetime of bleed. See as an example: https://doc.rust-lang.org/rust-by-example/scope/lifetime.html</li>
 </ul>
 
 

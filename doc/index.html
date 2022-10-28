@@ -42,7 +42,10 @@
 <li>Compiler error messages must be easy to read.</li>
 <li>Forward declarations not necessary. C-Header files including comments which are right before defined symbols will be automatically generated upon compilation. Needs proper definition of what is a "header" comment.</li>
 <li>includes. Shall be detected or found by the compiler automatically. Requires common rules on how to find implementation/header files. Maybe belongs to the build system. Needs further thinking.</li>
+<li>PIMPL must be prevented. Having no header files would already guarantee this.</li>
 <li>Try to recuce special characters like <code>!~\&lt;&gt;@|&amp;^./?_%</code> as much as possible.</li>
+<li>No implicit constructors, desctructors, converters, ...</li>
+<li>Do not allow insecure methods. scanf is one of the culprits.</li>
 </ul>
 
 
@@ -61,6 +64,14 @@
 <li><a href="rangefor/index.html">Range <code>for</code></a></li>
 <li><a href="bleedkeyword/index.html"><code>bleed</code> Keyword</a></li>
 <li><a href="oop/index.html">OOP</a></li>
+<li>Parameters passed to a method/function except the this parameter are ALWAYS const. If changing a variable and passing it back to the calling scope, use the <code>bleed</code> keyword.</li>
+<li>Parameter passing:
+  <ul>
+    <li>simple types like i32, f64, letter, .... are passed as values.</li>
+    <li>Pointers are passed as const pointers.</li>
+    <li>Structs are passed as const addresses and are dereferenced automatically in the inner scope. Exception: the this pointer might be marked with mutable.</li>
+  </ul></li>
+<li class="imporator"> Needs a lot of research still as I do not really know anythign aboutit, but it sounde very fascinating: Add yield and coroutine functionality.</li>
 </ul>
 
 
@@ -79,14 +90,53 @@
 <h2>Type-System</h2>
 
 <ul>
+<li>Strong typing.</li>
 <li>New type: "Byte"</li>
 <li>New integer types: i8, i16, i32, i64, ... u8, u16, u32, u64, ...</li>
 <li>New keyword "letter" for characters. Preferably UTF8</li>
 <li>New types "f32" and "f64" which repalce float and double.</li>
 <li>New type "bool", new keywords "true" and "false"</li>
 <li>Make array a native type (name under discussion. Some like vec but its frowned upon my most. Namespaces are problematic here as well). Proposition for syntax: array[i32, 6] whereas i32 is a type and 6 is the number of elements in the array. An array is fixed size.</li>
+<li>Type of index variable is size_t in C but becomes [] NAL. Needs a printf formatter %i.</li>
+<li>Make string a native type. Suggestion: Use UTF-8 as default. Can be extended later.</li>
+<li>Proposed type syntax:<br/><code>
+    Type-Syntax: [public|private] [(Parameterlist)] returntype
+    Type-Syntax: [bleed] typename [mutable]
+    Type-Syntax: [basetypename] { class definition }
+    Type-Syntax: enum { enumeration list }
+    
+</code>
+</li>
+<li>Disallow <code>**</code> type</li>
+<li>About structs: Replace it with <a href="oop/index.html">OOP</a> concept.</li>
+<li>All types are automatically typedef'd.</li>
+<li>Casts are NOT allowed. Except: dynamic casts using [someObject CastType]. Requires classes to store some kind of a type id given at runtime. Objects are casted automatically to their base type if the base type is requested. Basic types like f32 need converter methods like .toI32().</li>
+<li>Templates are not needed. Extending classes with Interfaces is better. Needs discussion.</li>
+<li>Initialization is the same as the assignment operator. Therefore <code>i = i32(5)</code> is the same as <code>i i32(5)</code></li>
+<li>nullptr exists. nullptr must be compatible with any object type. Required for dynamic casts.</li>
+<li>Add index/iterator type <code>[]</code>.
+</li>
 </ul>
 
+
+
+<h2>Other ideas</h2>
+<ul>
+<li>Function overloading could be cool. Easy to do with name mangling.</li>
+<li>Disallow standard parameters.</li>
+<li>No ascii mode for file input or output.</li>
+<li>Promote using less {}. Probably not a totally good idea. Keep them but make them optional.</li>
+<li>Variables are NOT initialized automatically.</li>
+<li>The operators <code>&amp;=</code> <code>|=</code> and <code>^=</code> should be extended to boolean values.</li>
+<li>Add named parameters. Make them optional.</li>
+<li>Variable shadowing is an error, not a warning. In constructors, the dot operator helps distinguishing between parameter and member.</li>
+<li>Assignment operators have no return value. So no a = b = c possible.</li>
+</ul>
+
+
+
+<h2>Examples submitted by viewers:</h2>
+<li>Syntax examples of why Rust is worse than C: <a href="https://pastebin.com/c7gvYAWC">Link</a>.</li>
 
 
 <code style="white-space:pre">
@@ -94,128 +144,21 @@
 
 Yet Uncategorized ideas:
 ------------------------
-- Disallow ** type
-- Syntax examples of why Rust is worse than C: https://pastebin.com/c7gvYAWC
-- string must be a language type.
-- Replace struct with class keyword.
-- Classes are automatically typedefd.
-- Classes store a type id given at runtime.
-- Classes declare public and protected methods, never privates.
-- Classes have no implicit constructors or desctructors.
-- Allow method to be pure. Need overwrite.
-- this must be declared explicitely as a parameter.
-- PIMPL must be prevented.
-- Private methods must be present in the implementation file.
-- Allow single inheritance
-- Interfaces are extensions, not inheritance.
-- Interfaces can be implemented outside of class to enhance classes.
-- Disallow casts except base types and inherited pointer types.
-- Error all implicit casts.
 - Allocation can be with or without reference counted.
-- Initialization should look like myVariable = MyType(params);
 - Initialization from Allocation can be like ... = new MyType(...).
-- Initialization from a function result does not need a type.
-- Pointers are only created with new keyword.
-- Replace Pointer arithmetics with iterators.
-- Add yield and coroutine functionality.
-- nullptr is an object which can be cast to but never from.
+- Pointers are only created with new keyword. Needs thinking. Because We do not see pointers anymore.
+
+MyClass myInstance;
+MyClass myInstance = new MyClass();
+
 - Disallow void*. Add customType with runtime code generation with declareWithType. 
-- No templates otherwise.
-- Replace const optional with mutable explicit. No matter which keyword survives, it only makes sense for pointer paramers or returned types. Maybe use mut instead of mutable.
-- Make inlines inline always.
-- size_t becomes []. Needs a printf formatter %i.
-- bleed keyword makes variables available outside of current scope.
-- Do not allow reading from console. No scanf.
-- No ascii mode for file input or output.
-- Disallow tab character.
-- Promote using less {}. Probably not a totally good idea. Keep them but make them optional.
-- Variables are NOT initialized automatically.
-- Do not define multiple variables with ,
-- Add named parameters. Make them optional.
-- arguments and parameter names must be equal.
-- Variable shadowing is an error, not a warning.
-- Variadic arguments are not allowed anymore. Define built-in printf.
-- return for (i in myArray) { return static sum += myArray[i]; }
-- Assignment operators have no return value. So no a = b = c possible.
+- No templates otherwise. Think about it. Have no real idea yet how.
+- Adding a list implementation. Potentially not, as it can easily be reprogrammed by the user and there are different implementations with different complexity.
 
-
-Some discussion points from the stream:
----------------------------------------
-- Function overloading could be cool.
-- bleed bleed bleed is bad.
-- lifetime of bleed. See as an example: https://doc.rust-lang.org/rust-by-example/scope/lifetime.html
 - Variadic initialization. Needs discussion.
-- Adding a list implementation.
+- Variadic arguments ... are not allowed anymore. Define built-in printf.
+- exception handling?
 
-
-Parameterpassing:
-------------------
-When we have no explicit dereference operator anymore, how to transfer data via parameters.
-- symbolname *i32 mutable
-- symbolname &i32 mutable          //preferred
-- symbolname ref i32 mutable       //preferred 
-- symbolname i32 ref mutable
-
-
-
-
-// Playfield for implementation and syntax.
-// Just some brainfucks, do not take this too serious.
-// Don't look at it too closely. It's a dump.
-
-
-
-    Type-Syntax: [(Parameterlist)] [&] returntype [mutable] [bleed]
-    Type-Syntax: [basetypename] { class definition }
-    Type-Syntax: enum { enumeration list }
-
-
-
-
-while(i = [myArray].first)
-  i.next(2);
-
-
-
-
-reftype MyType = MyBaseType & {
-  i32 myPublicInt;
-  protected single mySingle;
-  
-  constructor MyType();
-  constructor MyType(initializingInteger = i32);
-  destructor;
-  
-  protected compute() double;
-}
-
-myObject = new MyType;
-myObject.release;
-
-
-
-
-
-NAL:
-
-class myClass = baseClass & {
-  m_myInt = i32;
-
-  computeMeaningOfLife () i32;
-}
-
-extend myClass = myProtocol {
-  serialize(class){}
-}
-
-C:
-
-struct myClass{
-  baseClass firstMember;
-  int32 m_myInt;
-}
-
-int32 myClass_computeMeaningOfLife(myClass* this){}
 
 </code>
 

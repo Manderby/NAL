@@ -14,30 +14,39 @@
 
 <p>OOP in NAL shall be single inheritance.</p>
 
+
+
+<h2>Basic class/struct definition</h2>
+
 <div class="twoCodes">
   <code>
     NAL:
     private Bottle = BaseType {
-      volume f32(1.);     // auto initialized value
-      fluid string;       // uninitialized value
-      broken bool(false)  // auto initialized value
+      volume f32(1.);      // auto initialized value
+      fluid string;        // uninitialized value
+      broken bool(false);  // auto initialized value
     }
 
-    public constructor(this Bottle mutable, fluid string){
+    public
+    constructor(this Bottle mutable, fluid string) {
       .fluid = fluid; // dot operator, same as this.fluid
       // parameters are not mutable, so compiler would warn.
     }
 
-    public destructor(this Bottle mutable){
+    public
+    destructor(this Bottle mutable) {
       // do destructor stuff.
     }
     
-    public drink(this Bottle mutable, percentage f32) f32{
+    public override
+    drink(this Bottle mutable, percentage f32) f32{
+      BaseType(drink);
       volume *= 1. - percentage;
       return volume;
     }
 
-    protected dropOnTheFloor(this Bottle mutable){
+    protected
+    dropOnTheFloor(this Bottle mutable) {
       broken = true;
       volume = 0.;
     }
@@ -56,28 +65,30 @@
       int broken;
     };
     
-    float _bal_Bottle_constructor(Bottle* this, const char* fluid){
+    float _nal_Bottle_constructor(Bottle* this, const char* fluid) {
       this->volume = 1.;
       strncpy(this->fluid, fluid, strlen(fluid)); // todo: compiler must check for const.
       this->broken = 0;
     }
     
-    float _bal_Bottle_destructor(Bottle* this){
+    float _nal_Bottle_destructor(Bottle* this) {
       // do destructor stuff.
     }
 
-    float _nal_Bottle_drink(Bottle* this, float percentage){
+    float _nal_Bottle_drink(Bottle* this, float percentage) {
+      _nal_BaseType_drink((BaseType*)this);
       this->volume *= 1. - percentage;
       return this->volume;
     }
 
-    float _nal_Bottle_dropOnTheFloor(Bottle* this){
+    float _nal_Bottle_dropOnTheFloor(Bottle* this) {
       this->broken = 1;
       this->volume = 0.;
     }
     
     {
       Bottle bottle;
+      _nal_Bottle_constructor(bottle, "orange juice");
       float fluidLeft = _nal_Bottle_drink(&bottle, 4.44f);
     }
   </code>
@@ -86,45 +97,99 @@
 <h3>Discussion</h3>
 
 <ul>
-<li>Methods without public or protected are automatically private.</li>
+<li><code>this</code> must be declared explicitely as the first parameter.</li>
 <li>Do we even allow for any parameter other than "this" to be mutable? If not, we can ditch the reference alltogether and say that it is always a const reference. The bleed keyword would solve any remaining problems when trying to return a value other than the return value.</li>
+<li>Originally idea was to replace struct with class keyword. Using public and protected does the same job.</li>
+<li class="important">Classes declare public and private methods, never protected. Needs discussion, I'm really not sure about it. Is protected necessary or important? Methods without public or protected are automatically private and only have access to the members as long as they are in the same implementation file as the class declaration.</li>
+<li>All public methods are automatically virtual. Allow method to be pure. Need overwrite, otherwise, compiler will emit error.</li>
+<li>mutable only makes sense for paramers. Maybe use mut instead of mutable.</li>
 </ul>
 
+
+
+<h2>Interfaces</h2>
 
 <p>All types shall be extensible by allowing the programmer to define Interfaces and implement them. When implementing an interface inside of the implementation file where the type is declared, one has access to its private properties. Outside, only the public properties are available.</p>
 
 <div class="twoCodes">
   <code>
     NAL:
-    public MyInterface = {
-      refill ();  // no implementation = pure virtual
-      static create () BaseType;  // static
+    public Refillable = {
+      refill (this Refillable mutable);  // no implementation = pure virtual
     }
     
-    MyInterface.refill(this Bottle mutable) {
+    public override  // really necessary?
+    Refillable.refill(this Bottle mutable) {
       if(broken)
         printf("Cannot refill.");
       else
-        this.volume = 1.;
+        volume = 1.;
     }
     
-    MyInterface.create() BaseType {
-      return Bottle();
+    {
+      bottle Bottle("IceTea");
+      bottle.drink(.5);
+      bottle.refill();
     }
-
-
   </code>
   <code>
     C:
+    float _nal_Refillable_extends_Bottle_refill(Bottle* this) {
+      if(this->broken)
+        printf("Cannot refill.");
+      else
+        this->volume = 1.;
+    }
+
+    {
+      Bottle bottle;
+      ... // instantiation as above + calling drink
+      _nal_Refillable_extends_Bottle_refill(&bottle);
+    }
   </code>
 </div>
 
 <h3>Discussion</h3>
 
 <ul>
-<li>private or protected static methods make no sense. They are always public.</li>
 <li>private or protected static pure virtual methods make no sense. They are always public.</li>
 </ul>
+
+
+
+<h2>Static methods</h2>
+
+<p>Static methods can just be declared like this:</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    public MyBottleFactory = {
+      static create () BaseType;  // static
+    }
+
+    MyBottleFactory.create() BaseType {
+      return Bottle();
+    }
+
+  </code>
+  <code>
+    C:
+    BaseType* _nal_MyBottleFactory_create() {
+      BaseType* _nal_Bottle_instance = malloc(sizeof(Bottle));
+      _nal_Bottle_constructor(_nal_Bottle_instance);
+      return _nal_Bottle_instance;
+    }
+  </code>
+</div>
+
+
+<h3>Discussion</h3>
+
+<ul>
+<li>private or protected static methods make no sense. They are always public.</li>
+</ul>
+
 
 </body>
 </html>

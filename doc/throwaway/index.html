@@ -30,6 +30,9 @@
 <li><a href="#generalfor">General <code>for</code> loop declaration.</a></li>
 <li><a href="#goto"><code>goto</code> statement.</a></li>
 <li><a href="#asm"><code>asm</code> statement.</a></li>
+<li><a href="#inline"><code>inline</code> keyword.</a></li>
+<li><a href="#multidecl">Multiple variable declaration with comma</a></li>
+<li><a href="#assignoperators">Operators <code>%=</code>, <code>&gt;&gt;=</code>, <code>&lt;&lt;=</code></a></li>
 </ul>
 
 
@@ -281,7 +284,7 @@
 
 <h2 id="pointerarithmetic">Pointer arithmetics</h2>
 
-<p>Pointer arithmetics are inherently unsafe. We need to get rid of it. The only real thing which needs to be replaced it the <a hreaf="#arraytype">array type <code>[]</code></a> which can be replaced by a bilt-in type <code>array</code>.</p>
+<p>Pointer arithmetics are inherently unsafe. We need to get rid of it. The only real thing which needs to be replaced it the <a hreaf="#arraytype">array type <code>[]</code></a> which can be replaced by a bilt-in type <code>array</code>. A special new index type <code>[]</code> though will be put in place this handles everything concerning iteration.</p>
 
 <h3>Discussion</h3>
 
@@ -325,6 +328,51 @@
 <ul>
 <li>NAL shall not target system programmers, so we do not do <code>asm</code>.</li>
 </ul>
+
+
+
+<h2 id="inline"><code>inline</code> keyword</h2>
+
+<p>The <code>inline</code> keyword shall be removed completely without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>NAL has no more header files.</li>
+<li>Compilers know better than the programmer what shall be inlined.</li>
+</ul>
+
+
+
+<h2 id="multidecl">Multiple variable declaration with comma</h2>
+
+<p>Do not define multiple variables with commmas <code>,</code>.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>Doesn't cost much time to do it in separate lines.</li>
+<li>Isn't a problem anymore when we have no more pointer types.</li>
+<li>Looks terrible.</li>
+</ul>
+
+
+
+<h2 id="assignoperators">Operators <code>%=</code>, <code>&gt;&gt;=</code>, <code>&lt;&lt;=</code></h2>
+
+<p>Ditch these three operators.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li><code>%=</code> makes no sense mathematically.</li>
+<li>Shift operators are just too seldom.</li>
+<li>The operators <code>+=</code> <code>-=</code> <code>*=</code> and <code>/=</code> are usefule and simplify programming. Leave them.</li>
+<li>The operators <code>&amp;=</code> <code>|=</code> and <code>^=</code> are usefule and simplify programming flags and bools. Leave them</li>
+</ul>
+
+
+
 
 
 
