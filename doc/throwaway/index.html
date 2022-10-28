@@ -39,26 +39,26 @@
 <p>Compilers know the type of a value and hence can automatically decide whether it is a pointer or not. No need to have two separate operators <code>-&gt;</code> and <code>.</code> therefore. To make code look like other programming languages, we favor the dot operator. Translating to C means automatically replacing the dot with an arrow if necessary.</p>
 
 <div class="twoCodes">
-  <div class="nalCode">
+  <code>
     NAL:
     myValue = MyType;
     myPointer = *MyType; 
     myValue.memberName;
     myPointer.memberName;
-  </div>
-  <div class="cCode">
+  </code>
+  <code>
     C:
     MyType myValue;
     MyType* myPointer;
     myValue.memberName;
     myPointer->memberName;
-  </div>
+  </code>
 </div>
 
 <h3>Discussion</h3>
 
 <ul>
-<li>Pros, Cons...</li>
+<li>Maybe add ~> (Tilde-Pointer) for backwards combatibility for crazy people still wanting to have unsecure pointer.</li>
 </ul>
 
 
@@ -68,41 +68,41 @@
 <p>The type <code>int</code> and its modifiers <code>short</code> and <code>long</code> are system dependent. Additionally, the modifiers <code>signed</code> and <code>unsigned</code> are just cumbersome. We replace this all with built-in types:</p>
 
 <div class="twoCodes">
-  <div class="nalCode">
+  <code>
     NAL:
     i8
     i16
     i32
     i64
     ...
-  </div>
-  <div class="cCode">
+  </code>
+  <code>
     C:
     int8_t
     int16_t
     int32_t
     int64_t
     ...
-  </div>
+  </code>
 </div>
 
 <div class="twoCodes">
-  <div class="nalCode">
+  <code>
     NAL:
     u8
     u16
     u32
     u64
     ...
-  </div>
-  <div class="cCode">
+  </code>
+  <code>
     C:
     uint8_t
     uint16_t
     uint32_t
     uint64_t
     ...
-  </div>
+  </code>
 </div>
 
 
@@ -119,14 +119,14 @@
 <p>In C, the type <code>char</code> has the semantics of storing one character. That is usually 1 Byte but not necessary, therefore system dependent. Additionally, <code>char</code> is accessible as a number which is semantically wrong. We replace the type with the following.</p>
 
 <div class="twoCodes">
-  <div class="nalCode">
+  <code>
     NAL:
     letter
-  </div>
-  <div class="cCode">
+  </code>
+  <code>
     C:
     char
-  </div>
+  </code>
 </div>
 
 <p>A <code>letter</code> is encoded in UTF-8. It is not accessible as a number, unless one uses converter methods like <code>myLetter.ToASCIINum()</code>.</p>
@@ -144,18 +144,18 @@
 <p>We replace the floating point types of C with the following:</p>
 
 <div class="twoCodes">
-  <div class="nalCode">
+  <code>
     NAL:
     f32 
     f64 
     f128
-  </div>
-  <div class="cCode">
+  </code>
+  <code>
     C:
     float
     double
     long double (if available as 128 bit)
-  </div>
+  </code>
 </div>
 
 <p>And we allow for newer floating point types like <code>f16</code> (which would correspond to the IEEE-754 <code>half</code> type) or <code>f128</code> (which would correspond to the IEEE-754 <code>quad</code> type)</p>
@@ -183,7 +183,7 @@
 
 
 
-<h2 id="underscore">Underscore <code>_</code> as a symbol character</h2>
+<h2 id="underscore" class="badidea">Underscore <code>_</code> as a symbol character</h2>
 
 <p class="important">Discarded.</p>
 
@@ -206,18 +206,18 @@
 <p>Replace <code>do-while</code> with a new keyword <code>dowhile</code>. Put condition before <code>{}</code> Block.</p>
 
 <div class="twoCodes">
-  <div class="nalCode">
+  <code>
     NAL:
     dowhile(condition) {
       ...
     }
-  </div>
-  <div class="cCode">
+  </code>
+  <code>
     C:
     do {
       ...
     } while (condition)
-  </div>
+  </code>
 </div>
 
 <h3>Discussion</h3>

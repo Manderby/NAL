@@ -1,14 +1,19 @@
+html{
+  background-color:#999999;
+  font-size:1.4em;
+}
+
 h1{
-  font-size:30pt;
+  font-size:3em;
 }
 
 h2{
   margin-top:50pt;
-  font-size:20pt;
+  font-size:2em;
 }
 
 h3{
-  font-size:14pt;
+  font-size:1.2em;
 }
 
 code{
@@ -25,17 +30,16 @@ code{
 }
 
 .twoCodes{
-  display:table
+  width:auto;
+  display:flex;
+  flex-direction:row;
+  flex-basis:40%;
+  justify-content:space-between;
+  gap:10px;
 }
 
-.nalCode{
-  display:table-cell;
-  white-space:pre;
-  font-family:Monospace;
-}
-
-.cCode{
-  display:table-cell;
-  white-space:pre;
-  font-family:Monospace;
+.twoCodes * {
+  border:1px solid black;
+  border-radius: 5px;
+  padding-right: 30px;
 }
