@@ -1,0 +1,171 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="../css.css"/>
+</head>
+<body>
+
+
+<a href="../index.html">&lt;-- back</a>
+
+<h1>Ownership</h1>
+
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    myArbitraryMethodWhichStoredAnObject(object MyObject own){
+      someOtherObject.theStorage = object;
+    }
+
+    revokeTheStorage(this MyOtherClass mutable) MyObject move {
+      return this.theStorage;
+    }
+
+    getTheStorage(this MyOtherClass mutable) MyObject {
+      return this.theStorage;
+    }
+    
+    {
+      myObject = new MyClass();
+      myArbitraryMethodWhichStoredAnObject(move myObject);
+      
+      someWeakPointer = someOtherObject.getTheStorage();
+      
+      myOrigialObject = own someOtherObject.revokeTheStorage();
+      
+      myOrigialObject2 = someOtherObject.revokeTheStorage(); // floating
+    }
+  </code>
+  <code>
+    C:
+    myArbitraryMethodWhichStoredAnObject(MyObject* object){
+      if(someOtherObject->theStorage) { ... } // delete and deallocate object
+      someOtherObject->theStorage = object;
+    }
+    
+    MyObject* revokeTheStorage(MyOtherClass* this){
+      MyObject* _nal_move_return = this->theStorage;
+      this->theStorage = NULL;
+      return _nal_move_return;
+    }
+
+    MyObject* getTheStorage(MyOtherClass* this){
+      return this->theStorage;
+    }
+
+    {
+      MyClass* myObject = ... // allocate and construct
+      myArbitraryMethodWhichStoredAnObject(myObject);
+      myObject = NULL;
+      
+      MyClass* someWeakPointer = someOtherObject->getTheStorage();
+      
+      MyClass* myOrigialObject = NULL;
+      myOrigialObject = _nal_MyOtherClass_revokeTheStorage(someOtherObject);
+      
+      if(myObject){ ... } // destruct and dealloc object.
+      if(myOrigialObject){ ... } // destruct and dealloc object.
+      if(myOrigialObject2) { runtime error }
+    }
+
+  </code>
+</div>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>If a non-owned variable is deleted or moved, the compiler outputs an error.</li>
+<li>If a variable is moved but not owned immediately in the other scope, it is so called <q>floating</q>.</li>
+<li><q>floating</q> variables can be moved.</li>
+<li>If a <q>floating</q> variable comes to the end of life without being owned or deleted, the compiler reports an error.</li>
+</ul>
+
+  <code>
+    private MyElement = {
+      content MyObject;
+    }
+
+    destructor(this MyElement mutable){
+      bleed previousElement = move myElement.content;
+      dealloc(this);
+    }
+    
+    {
+      previousElement: storedElement = own delete myElement;
+    }
+  </code>
+
+
+
+<h2>Playground</h2>
+
+<code>
+f(move variable) -> f(parameter type)         // floating ownership
+f(move variable) -> f(parameter type own)     // ownership transfer to function
+f(...) returntype move -> variable = f();     // floating ownership
+f(...) returntype move -> variable = own f(); // ownership transfer to caller
+
+floating ownership:
+The variable is not owned by anyone yet. If a floating variable is given as a non-own parameter to a method, that methods scope must become the owning scope of the variable.
+
+f(parameter MyObject){
+  g(parameter);
+}
+g(parameter MyObject){
+  h(move parameter);
+}
+h(parameter MyObject own){
+  somehwere.storage = parameter;
+}
+</code>
+
+<code>
+  Example in C++:
+
+  class MyClass {
+    myFloatArray* ; // someDynamicallyAllocatedStructionWith new
+  public:
+    MyClass() {myFloatArray = malloc(1234);}
+    ~MyClass() {free(myFloatArray);}
+  };
+
+  class SomeOtherClass{
+    MyClass* theStorage;
+  public:
+    static MyClass* getTheStorage();
+  } someOtherObject;
+
+  {
+    MyClass myObject;
+  } // implicit destruction of myObject
+
+  {
+    MyClass* myObject = new MyClass();
+    delete myObject; // explicit destruction of myObject
+  }
+
+  void myArbitraryMethodWhichStoredAnObject(own MyObject* object){
+    someOtherObject.theStorage = object;
+  }
+
+  MyClass* SomeOtherClass::getTheStorage() revoke {
+    return std::move(someOtherObject.theStorage); // revoke ownership
+  }
+
+  {
+    MyClass* myObject = new MyClass();
+    myArbitraryMethodWhichStoredAnObject(std::move(myObject));
+    //delete myObject; // faulty destruction of myObject, because ownership is invalid.
+    
+    own MyClass* myOrigialObject = SomeOtherClass::getTheStorage();
+    // who is the owner of myOrigialObject?
+  }
+
+</code>
+
+
+</body>
+</html>

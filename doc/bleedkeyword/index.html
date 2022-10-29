@@ -76,7 +76,7 @@ size_t index = it - myArray.begin();</code>
 <div class="twoCodes">
   <code>
     NAL:
-    getSum = (myArray = array) f32 {
+    getSum(myArray array) f32 {
       bleed size = myArray.size();
       sum = f32(0.);
       for (i in myArray) { sum += myArray[i]; }
@@ -85,6 +85,42 @@ size_t index = it - myArray.begin();</code>
     
     {
       theSum, size: theSize = getSum(myArray);
+      printf("Average: %f", theSum / mySize);
+    }
+  </code>
+  <code>
+    C:
+    float getSum(_NALArray myArray, i32* _size) {
+      _nal_bleeding_size = _nalGetArraySize(myArray);
+      float sum = 0.;
+      for (size_t i = 0; i < _nal_bleeding_size; ++i) { sum += myArray[i]; }
+      _size = _nal_bleeding_size;
+      return sum;
+    }
+
+    {
+      i32* _nal_bleeded_size;
+      float theSum = getSum(myArray, _nal_bleeded_size);
+      const i32* theSize = _nal_bleeded_size;
+      printf("Average: %f", theSum / theSize.toF32());
+    }
+  </code>
+</div>
+
+<p>Other posibility:</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    getSum(myArray array) f32{
+      bleed size = myArray.size();
+      sum = f32(0.);
+      for (i in myArray) { sum += myArray[i]; }
+      return sum; // will be bleeded as sum:
+    }
+    
+    {
+      sum: theSum, size: theSize = getSum(myArray);
       printf("Average: %f", theSum / mySize);
     }
   </code>
