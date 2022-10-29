@@ -40,7 +40,7 @@
     
     public override
     drink(this Bottle mutable, percentage f32) f32{
-      BaseType(drink);
+      BaseType.drink(percentage);
       volume *= 1. - percentage;
       return volume;
     }

@@ -31,7 +31,7 @@
 
 <ul>
 <li>keywords do never contain underscores.</li>
-<li>keywords are always lowercase only and decimal digits.</li>
+<li>keywords are always lowercase only.</li>
 </ul>
 
 
@@ -64,14 +64,16 @@
 <li><a href="rangefor/index.html">Range <code>for</code></a></li>
 <li><a href="bleedkeyword/index.html"><code>bleed</code> Keyword</a></li>
 <li><a href="oop/index.html">OOP</a></li>
-<li>Parameters passed to a method/function except the this parameter are ALWAYS const. If changing a variable and passing it back to the calling scope, use the <code>bleed</code> keyword.</li>
+<li>Parameters passed to a method/function except the <code>this</code> parameter are ALWAYS const. <code>this</code> is const by default but can be made non-const using the <code>mutable</code> keyword. If changing a variable and passing it back to the calling scope is required, use the <code>bleed</code> keyword.</li>
 <li>Parameter passing:
   <ul>
     <li>simple types like i32, f64, letter, .... are passed as values.</li>
-    <li>Pointers are passed as const pointers.</li>
-    <li>Structs are passed as const addresses and are dereferenced automatically in the inner scope. Exception: the this pointer might be marked with mutable.</li>
+    <li>Pointers are passed as const pointers and are dereferenced automatically in the inner scope.</li>
+    <li>Structs are passed by default as const addresses and are dereferenced automatically in the inner scope.</li>
+    <li>Pointer parameters might be marked with mutable.</li>
+    <li class="important">Ownership must be transferred upon calling functions. How to do and mark the parameters? Keyword <code>move</code>? Only methods with a this pointer may have transferring parameters? Keyword <code>revoke</code> upon return? Is bleeding maybe the solution. Does a scope can become owner of such variables and when using such variables as parameters, they becom moved automatically and re-bleed automatically?</li>
   </ul></li>
-<li class="imporator"> Needs a lot of research still as I do not really know anythign aboutit, but it sounde very fascinating: Add yield and coroutine functionality.</li>
+<li class="important">Add yield and coroutine functionality. Needs a lot of research still as I do not really know anything about it, but it sounde very fascinating.</li>
 </ul>
 
 
@@ -91,13 +93,13 @@
 
 <ul>
 <li>Strong typing.</li>
-<li>New type: "Byte"</li>
+<li>New type: "byte" ?</li>
 <li>New integer types: i8, i16, i32, i64, ... u8, u16, u32, u64, ...</li>
-<li>New keyword "letter" for characters. Preferably UTF8</li>
+<li>New keyword "letter" for characters. Preferably UTF-8</li>
 <li>New types "f32" and "f64" which repalce float and double.</li>
 <li>New type "bool", new keywords "true" and "false"</li>
 <li>Make array a native type (name under discussion. Some like vec but its frowned upon my most. Namespaces are problematic here as well). Proposition for syntax: array[i32, 6] whereas i32 is a type and 6 is the number of elements in the array. An array is fixed size.</li>
-<li>Type of index variable is size_t in C but becomes [] NAL. Needs a printf formatter %i.</li>
+<li>Type of index variable is size_t in C but becomes [] on NAL. Needs a printf formatter %i.</li>
 <li>Make string a native type. Suggestion: Use UTF-8 as default. Can be extended later.</li>
 <li>Proposed type syntax:<br/><code>
     Type-Syntax: [public|private] [(Parameterlist)] returntype
@@ -125,12 +127,13 @@
 <li>Function overloading could be cool. Easy to do with name mangling.</li>
 <li>Disallow standard parameters.</li>
 <li>No ascii mode for file input or output.</li>
-<li>Promote using less {}. Probably not a totally good idea. Keep them but make them optional.</li>
+<li>Promote using less <code>{}</code>. Probably not a good idea to remove them all. Make them optional where useful.</li>
 <li>Variables are NOT initialized automatically.</li>
 <li>The operators <code>&amp;=</code> <code>|=</code> and <code>^=</code> should be extended to boolean values.</li>
-<li>Add named parameters. Make them optional.</li>
+<li>The operators <code>&amp;&amp;</code> and <code>||</code> are to be replaced with <code>&amp;</code> and <code>|</code>. Due to strong typing, that should not be an issue</li>
+<li>Add named parameters. Optional.</li>
 <li>Variable shadowing is an error, not a warning. In constructors, the dot operator helps distinguishing between parameter and member.</li>
-<li>Assignment operators have no return value. So no a = b = c possible.</li>
+<li>Assignment operators have no return value. So no <code>a = b = c</code> possible.</li>
 </ul>
 
 
