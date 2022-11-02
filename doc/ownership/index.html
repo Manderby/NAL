@@ -12,63 +12,138 @@
 
 <h1>Ownership</h1>
 
+<ul>
+<li>Member pointers can be marked by one of the keywords <code>own</code> or <code>share</code> but are owned by default.</li>
+<li>For parameters, both keywords can be used again. But they are shared by default.</li>
+<li>For return types, both keywords can be used again. But they are shared by default.</li>
+<li>Local variables take on the type given by the assignment.</li>
+<li>Shared variables can NOT be assigned to owning types.</li>
+<li>Shared variables can be assigned to sharing types. Assigning results in decrementing the reference count of the previously stored shared pointer and incrementing the reference count of the newly assigned pointer.</li>
+<li>Owned variables can be assigned to owning types (or transferred via parameters or return values). Doing so revokes the ownership of the previous scope or object and the new object/scope becomes the owner.</li>
+<li>Owned variables can be assigned to sharing types. Upon assignment, if the <code>share</code> keyword is used, the owned pointer revokes all ownership and the pointer becomes a purely shared pointer. Without using the <code>share</code> keyword, the pointer is assigned the same as a shared pointer.</li>
+<li>After assigning a previously-owned pointer, the pointer becomes NULL.</li>
+<li>If the compiler detects the necessity, pointers are always stored with a reference count and a flag, whether they are owned or not.</li>
+<li>When a pointer is owned, the reference count counts how many shared references there exist.</li>
+<li>When an owned pointer gets deleted and there still are shared references, the runtime system executes an exception.</li>
+<li>When an shared pointer gets deleted, its reference count gets decremented until the counter reaches zero. Then, if it is not owned by anyone, it gets deleted automatically.</li>
+<li>Shared pointers can never become owned pointers again.</li>
+<li>A type with <code>own</code> always is implicitely <code>mutable</code>.</li>
+<li>The keyword <b><code>own</code></b> as a type means: This variable owns the pointer.</li>
+<li>The keyword <b><code>share</code></b> as a type means: This variable stores a shared pointer.</li>
+<li>The keyword <b><code>own</code></b> as an operator means: The ownership of the pointer is transferred to the receyving scope.</li>
+<li>The keyword <b><code>share</code></b> as an operator means: The ownership of the pointer is revoked and shall never again be owned by anyone.</li>
+<li>Not using any of the two keywords at all means: The ownership stays as it was before. The reference count though is handeled just the same as always.</li>
+<li>Both keyword <b><code>own</code></b> and <b><code>share</code></b> can only be used as an operator acting upon an owned variable.</li>
+</ul>
 
 <div class="twoCodes">
   <code>
     NAL:
-    myArbitraryMethodWhichStoredAnObject(object MyObject own){
-      someOtherObject.theStorage = object;
+    
+    public MyClass{
+      myOwnMember MyPointerClass;
+      mySharedMember MyPointerClass share;
+    };
+    
+    constructor(this MyClass mutable){
+      myOwnMember = new MyPointerClass();
     }
-
-    revokeTheStorage(this MyOtherClass mutable) MyObject move {
-      return this.theStorage;
+    
+    getShared(this MyClass) MyPointerClass{
+      return mySharedMember;
     }
-
-    getTheStorage(this MyOtherClass mutable) MyObject {
-      return this.theStorage;
+    
+    getOwned(this MyClass) MyPointerClass{
+      return myOwnMember;
+    }
+    
+    revokeOwned(this MyClass mutable) MyPointerClass own{
+      return myOwnMember;
+    }
+    
+    setShared(this MyClass mutable, newPointer MyPointerClass){
+      mySharedMember = newPointer;
+    }
+    
+    setOwned(this MyClass mutable, newPointer MyPointerClass own){
+      myOwnMember = newPointer;
     }
     
     {
+      myPointer = new MyPointerClass();
       myObject = new MyClass();
-      myArbitraryMethodWhichStoredAnObject(move myObject);
+      myObject.setOwned(own myPointer);
       
-      someWeakPointer = someOtherObject.getTheStorage();
+      someSharedPointer = myObject.getShared();
+      someSharedPointer = myObject.getOwned();
       
-      myOrigialObject = own someOtherObject.revokeTheStorage();
+      myPurelySharedPointer = share myObject.revokeOwned();
       
-      myOrigialObject2 = someOtherObject.revokeTheStorage(); // floating
+      myScopeOwnedPointer = myObject.revokeOwned();
     }
   </code>
   <code>
     C:
-    myArbitraryMethodWhichStoredAnObject(MyObject* object){
-      if(someOtherObject->theStorage) { ... } // delete and deallocate object
-      someOtherObject->theStorage = object;
+    struct MyClass{
+      MyPointerClass* myOwnMember;
+      const MyPointerClass* mySharedMember;
+    };
+
+    MyClass* _nal_MyClass_constructor(){
+      this = _nal_alloc(MyClass);
+      this->myOwnMember = _nal_own(_nal_MyPointerClass_constructor());
+      this->mySharedMember = NULL;
+      return this;
+    }
+
+    const MyPointerClass* _nal_MyClass_getShared(const MyClass* this){
+      _nal_incRef(this->mySharedMember);
+      return this->mySharedMember;
+    }
+
+    const MyPointerClass* _nal_MyClass_getOwned(const MyClass* this){
+      _nal_incRef(this->myOwnMember);
+      return this->myOwnMember;
+    }
+
+    MyPointerClass* revokeOwned(this MyClass mutable){
+      MyPointerClass* _retValue = this->myOwnMember;
+      this->myOwnMember = NULL;
+      return retValue;
     }
     
-    MyObject* revokeTheStorage(MyOtherClass* this){
-      MyObject* _nal_move_return = this->theStorage;
-      this->theStorage = NULL;
-      return _nal_move_return;
+    void _nal_MyClass_setShared(MyClass* this, const MyPointerClass* newPointer){
+      _nal_decRef(this->mySharedMember);
+      this->mySharedMember = newPointer;
+      _nal_incRef(this->mySharedMember);
     }
 
-    MyObject* getTheStorage(MyOtherClass* this){
-      return this->theStorage;
+    void _nal_MyClass_setOwned(MyClass* this, MyPointerClass* newPointer){
+      _nal_destroyOwning(this->myOwnMember);
+      this->myOwnMember = newPointer;
+      newPointer = NULL;
     }
-
+    
     {
-      MyClass* myObject = ... // allocate and construct
-      myArbitraryMethodWhichStoredAnObject(myObject);
-      myObject = NULL;
+      MyPointerClass* myPointer = _nal_constructor_MyPointerClass();
+      MyClass* myObject = _nal_constructor_MyClass();
+      _nal_MyClass_setOwned(myObject, myPointer);
+      myPointer = NULL;
+
+      const MyPointerClass* someSharedPointer = _nal_MyClass_getShared(myObject);
+      _nal_decRef(someSharedPointer);
+      someSharedPointer = getOwned(myObject);
+
+      MyPointerClass* myPurelySharedPointer = _nal_MyClass_getShared(myObject);
+      _nal_decRef(myPurelySharedPointer);
+      MyPointerClass* myPurelySharedPointer = _nal_pureShare(_nal_MyClass_revokeOwned(myObject));
       
-      MyClass* someWeakPointer = someOtherObject->getTheStorage();
+      MyPointerClass* myScopeOwnedPointer = _nal_MyClass_revokeOwned(myObject);
       
-      MyClass* myOrigialObject = NULL;
-      myOrigialObject = _nal_MyOtherClass_revokeTheStorage(someOtherObject);
-      
-      if(myObject){ ... } // destruct and dealloc object.
-      if(myOrigialObject){ ... } // destruct and dealloc object.
-      if(myOrigialObject2) { runtime error }
+      _nal_decRef(someSharedPointer);
+      _nal_decRef(myPurelySharedPointer);
+      // myPurelySharedPointer might be leaking if there is a cyclic reference.
+      _nal_destroyOwning_MyClass(myScopeOwnedPointer);
     }
 
   </code>
@@ -77,94 +152,11 @@
 <h3>Discussion</h3>
 
 <ul>
-<li>If a non-owned variable is deleted or moved, the compiler outputs an error.</li>
-<li>If a variable is moved but not owned immediately in the other scope, it is so called <q>floating</q>.</li>
-<li><q>floating</q> variables can be moved.</li>
-<li>If a <q>floating</q> variable comes to the end of life without being owned or deleted, the compiler reports an error.</li>
 </ul>
 
-  <code>
-    private MyElement = {
-      content MyObject;
-    }
-
-    destructor(this MyElement mutable){
-      bleed previousElement = move myElement.content;
-      dealloc(this);
-    }
-    
-    {
-      previousElement: storedElement = own delete myElement;
-    }
-  </code>
 
 
 
-<h2>Playground</h2>
-
-<code>
-f(move variable) -> f(parameter type)         // floating ownership
-f(move variable) -> f(parameter type own)     // ownership transfer to function
-f(...) returntype move -> variable = f();     // floating ownership
-f(...) returntype move -> variable = own f(); // ownership transfer to caller
-
-floating ownership:
-The variable is not owned by anyone yet. If a floating variable is given as a non-own parameter to a method, that methods scope must become the owning scope of the variable.
-
-f(parameter MyObject){
-  g(parameter);
-}
-g(parameter MyObject){
-  h(move parameter);
-}
-h(parameter MyObject own){
-  somehwere.storage = parameter;
-}
-</code>
-
-<code>
-  Example in C++:
-
-  class MyClass {
-    myFloatArray* ; // someDynamicallyAllocatedStructionWith new
-  public:
-    MyClass() {myFloatArray = malloc(1234);}
-    ~MyClass() {free(myFloatArray);}
-  };
-
-  class SomeOtherClass{
-    MyClass* theStorage;
-  public:
-    static MyClass* getTheStorage();
-  } someOtherObject;
-
-  {
-    MyClass myObject;
-  } // implicit destruction of myObject
-
-  {
-    MyClass* myObject = new MyClass();
-    delete myObject; // explicit destruction of myObject
-  }
-
-  void myArbitraryMethodWhichStoredAnObject(own MyObject* object){
-    someOtherObject.theStorage = object;
-  }
-
-  MyClass* SomeOtherClass::getTheStorage() revoke {
-    return std::move(someOtherObject.theStorage); // revoke ownership
-  }
-
-  {
-    MyClass* myObject = new MyClass();
-    myArbitraryMethodWhichStoredAnObject(std::move(myObject));
-    //delete myObject; // faulty destruction of myObject, because ownership is invalid.
-    
-    own MyClass* myOrigialObject = SomeOtherClass::getTheStorage();
-    // who is the owner of myOrigialObject?
-  }
-
-</code>
 
 
 </body>
