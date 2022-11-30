@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="../css.css"/>
+</head>
+<body>
+
+
+<a href="../index.html">&lt;-- back</a>
+
+<h1><code>bleed</code> Keyword</h1>
+
+<p>The <code>bleed</code> keyword is a new concept of NAL which has the following semantic:</p>
+
+<p class="important">A symbol declared/defined with <code>bleed</code> automatically becomes visible in the scope directly outside of the one it is defined in.</p>
+
+<p>This has two main applications: Control structure scope and function scope.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>A symbol is only bleeded one scope outside, not multiple ones. In order to bleed a symbol further outside, it has to be marked with <code>bleed</code> again upon declaration/definition.</li>
+<li>Bleeding a symbol solves one of the ownership problems. When a scope would like to change the content of a variable using a method for example, in C and C+, it provides a "reference" to the object to the method which then changes it. But this disrupts ownership. When a variable though is created inside the method which is then bleeded outwards, the outer scope can simply replace the owned variable with the (bleeded) returned one.</li>
+</ul>
+
+
+
+
+<h2>Control Structure Scope</h2>
+
+<p>In the following simple example, the index used inside of the for loop becomes visible outside of the loop.</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    for (bleed i in myArray) {
+      if (myArray[i] == nullptr) break;
+    }
+    printf("The resulting index is %i", i);
+  </code>
+  <code>
+    C:
+    size_t _i;
+    for (; _i < _nalArraySize(myArray); ++_i) {
+      if (myArray[_i] == nullptr) break;
+    }
+    printf("The resulting index is %d", (int)_i);
+  </code>
+</div>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>The symbol name is not available BEFORE the scope declaration.</li>
+<li>The lifespan of the symbol is extended till the end of the outer scope.</li>
+<li>The symbol name must be unique in the outside scope.</li>
+<li>As the symbol name must be unique in the outside scope, prepending a simple underscore <code>_</code> in C is sufficient.</li>
+<li>By default, no matter whether the symbol is const or mutable inside the inner scope, it will be const in the outer scope by default. If desired, an additional <code>mutable</code> keyword makes it mutable in the outer scope: <code>for (mutable bleed i in myArray) { ...</code></li>
+<li>In C++, there are the std library function like <code>find_if</code>. The same example as above would be written like this in C++:
+<code>auto it = std::find_if(myArray.begin(), myArray.end(), [=](const auto& elem){return elem == nullptr;});
+size_t index = it - myArray.begin();</code>
+</li>
+<li>bleed bleed bleed is not possible. Needs to be re-bleeded in the outer scope.</li>
+<li>lifetime of bleed. See as an example: https://doc.rust-lang.org/rust-by-example/scope/lifetime.html</li>
+</ul>
+
+
+
+
+<h2>Function Scope</h2>
+
+<p>In the following simple example, the variable used inside of the function becomes accessible to the calling scope as optional return value.</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    getSum(myArray array) f32 {
+      bleed size = myArray.size();
+      sum = f32(0.);
+      for (i in myArray) { sum += myArray[i]; }
+      return sum;
+    }
+    
+    {
+      theSum, size: theSize = getSum(myArray);
+      printf("Average: %f", theSum / mySize);
+    }
+  </code>
+  <code>
+    C:
+    float getSum(_NALArray myArray, i32* _size) {
+      _nal_bleeding_size = _nalGetArraySize(myArray);
+      float sum = 0.;
+      for (size_t i = 0; i < _nal_bleeding_size; ++i) { sum += myArray[i]; }
+      _size = _nal_bleeding_size;
+      return sum;
+    }
+
+    {
+      i32* _nal_bleeded_size;
+      float theSum = getSum(myArray, _nal_bleeded_size);
+      const i32* theSize = _nal_bleeded_size;
+      printf("Average: %f", theSum / theSize.toF32());
+    }
+  </code>
+</div>
+
+<p>Other posibility:</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    getSum(myArray array) f32{
+      bleed size = myArray.size();
+      sum = f32(0.);
+      for (i in myArray) { sum += myArray[i]; }
+      return sum; // will be bleeded as sum:
+    }
+    
+    {
+      sum: theSum, size: theSize = getSum(myArray);
+      printf("Average: %f", theSum / mySize);
+    }
+  </code>
+  <code>
+    C:
+    float getSum(_NALArray myArray, i32* _size) {
+      _nal_bleeding_size = _nalGetArraySize(myArray);
+      float sum = 0.;
+      for (size_t i = 0; i < _nal_bleeding_size; ++i) { sum += myArray[i]; }
+      _size = _nal_bleeding_size;
+      return sum;
+    }
+
+    {
+      i32* _nal_bleeded_size;
+      float theSum = getSum(myArray, _nal_bleeded_size);
+      const i32* theSize = _nal_bleeded_size;
+      printf("Average: %f", theSum / theSize.toF32());
+    }
+  </code>
+</div>
+
+<p>If someone is not interested in the optional <code>size</code> return value, one simply writes the following. The variable <code>_nal_devnull</code> is a variable where anything can be written to but it will be completely ignored.</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    {
+      theSum = getSum(myArray);
+    }
+  </code>
+  <code>
+    C:
+    {
+      float theSum = getSum(myArray, _nal_devnull);
+    }
+  </code>
+</div>
+
+
+
+
+
+</body>
+</html>

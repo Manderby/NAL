@@ -1,0 +1,46 @@
+html{
+  background-color:#999999;
+  font-size:1.4em;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+h1{
+  font-size:3em;
+}
+
+h2{
+  margin-top:50pt;
+  font-size:2em;
+}
+
+h3{
+  font-size:1.2em;
+}
+
+code{
+  white-space:pre;
+}
+
+.important{
+  color:#800000;
+  background-color:#ffffcc;
+}
+
+.badidea{
+  text-decoration: line-through;
+}
+
+.twoCodes{
+  width:auto;
+  display:flex;
+  flex-direction:row;
+  flex-basis:40%;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.twoCodes * {
+  border:1px solid black;
+  border-radius: 5px;
+  padding-right: 30px;
+}
