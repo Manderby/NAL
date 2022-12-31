@@ -172,5 +172,18 @@ MyClass myInstance = new MyClass();
 
 
 
+<code>
+    toplevel-definition: module identifier = moduleidentifier;
+    toplevel-definition: define symbol = constexpression;
+    toplevel-definition: typedef symbol = typeexpression;
+    toplevel-definition: [.] symbol = enum { enumeration list }
+    toplevel-definition: [.] symbol = [mutable] [typename] (parameterlist) [returntype] {functiondefinition}
+    toplevel-definition: [.] symbol = [mutable] modulename {classdeclaration}
+
+    symbol = identifier
+    modulename = identifier
+</code>
+
+
 </body>
 </html>

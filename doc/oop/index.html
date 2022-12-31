@@ -21,10 +21,14 @@
 <div class="twoCodes">
   <code>
     NAL:
-    private Bottle = BaseType {
-      volume f32(1.);      // auto initialized value
-      fluid string;        // uninitialized value
-      broken bool(false);  // auto initialized value
+    Bottle = BaseType {
+      volume = 1.;         // auto initialized value with auto type
+      string fluid;        // uninitialized value with manual type
+      bool broken = false; // auto initialized value with manual type
+    }
+
+    mutable MyStruct = BaseType {
+      // ...
     }
 
     public
@@ -97,12 +101,11 @@
 <h3>Discussion</h3>
 
 <ul>
-<li><code>this</code> must be declared explicitely as the first parameter.</li>
-<li>Do we even allow for any parameter other than "this" to be mutable? If not, we can ditch the reference alltogether and say that it is always a const reference. The bleed keyword would solve any remaining problems when trying to return a value other than the return value.</li>
-<li>Originally idea was to replace struct with class keyword. Using public and protected does the same job.</li>
-<li class="important">Classes declare public and private methods, never protected. Needs discussion, I'm really not sure about it. Is protected necessary or important? Methods without public or protected are automatically private and only have access to the members as long as they are in the same implementation file as the class declaration.</li>
-<li>All public methods are automatically virtual. Allow method to be pure. Need overwrite, otherwise, compiler will emit error.</li>
-<li>mutable only makes sense for paramers. Maybe use mut instead of mutable.</li>
+<li>Writing a class without modifier denotes a class-like behaviour, meaning all declared members are private. <code>mutable</code> denotes a struct-like behaviour, meaning, all declared members are public</li>
+<li>Methods are defined with Classname.methodname = ... and are always public. <code>this</code> is available implicitely and is const by default. If a mutable method is required, mutable must be written before the Classname.</li>
+<li>Private methods are not defined like such. They are normal functions which define the <code>this</code> variable as either a first parameter or as a local variable.</li>
+<li>Classes declare public and private methods, never protected. Needs discussion, I'm really not sure about it. Is protected necessary or important? Methods without public or protected are automatically private and only have access to the members as long as they are in the same implementation file as the class declaration.</li>
+<li>All methods are automatically virtual. But needs overwrite, otherwise, compiler will emit error. Allow methods to be pure by simply omiting the implementation. But then, <code>this</code> must be declared as first parameter.</li>
 </ul>
 
 
