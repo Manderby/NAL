@@ -1,3 +1,7 @@
+/* Das ist 
+ein 
+multi line
+Comment. */
 
 // Global definitions:
 myPI           = define 3.14159;
@@ -5,8 +9,6 @@ myType         = typedef f32;
 myFunctionType = typedef bool (i32);
 
 // global variables and global functions are not allowed.
-
-
 
 MyTestModule = module;
 
@@ -17,7 +19,7 @@ MyTestModule = module;
 //myPrivateMethod         = bool (this, i32 myParameter) {return true;}
 //.myPublicMethod         = bool (this, i32 myParameter) {return true;}
 
-
+     /*X*/
 
 CMThreeDeeOptionsController = module : NASpace;
 
