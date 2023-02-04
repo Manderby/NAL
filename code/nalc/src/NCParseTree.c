@@ -2,14 +2,16 @@
 #include "NCParseEntity.h"
 
 struct NCParseTree{
+  NCParseTree* parent;
   NAList entities;
 };
 
 
 
-NCParseTree* ncAllocParseTree(void)
+NCParseTree* ncAllocParseTree(NCParseTree* parent)
 {
   NCParseTree* tree = naAlloc(NCParseTree);
+  tree->parent = parent;
   naInitList(&(tree->entities));
   
   return tree;
@@ -30,4 +32,10 @@ void ncAddParseTreeEntity(
   NCParseEntity* entity)
 {
   naAddListLastMutable(&(tree->entities), entity);
+}
+
+
+
+NCParseTree* ncGetParseTreeParent(NCParseTree* tree){
+    return tree->parent;
 }

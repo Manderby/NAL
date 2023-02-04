@@ -12,7 +12,8 @@ typedef struct NCParseTree NCParseTree;
 
 
 
-NCParseTree* ncAllocParseTree(void);
+NCParseTree* ncAllocParseTree(
+  NCParseTree* parent);
 
 void ncDeallocParseTree(
   NCParseTree* tree);
@@ -20,5 +21,8 @@ void ncDeallocParseTree(
 void ncAddParseTreeEntity(
   NCParseTree* tree,
   NCParseEntity* entity);
+
+NCParseTree* ncGetParseTreeParent(
+  NCParseTree* tree);
 
 #endif // NC_PARSE_TREE_INCLUDED

@@ -1,8 +1,3 @@
-/* Das ist 
-ein 
-multi line /
-
-Comment. */
 
 // Global definitions:
 myPI           = define 3.14159;
@@ -20,17 +15,7 @@ MyTestModule = module;
 //myPrivateMethod         = bool (this, i32 myParameter) {return true;}
 //.myPublicMethod         = bool (this, i32 myParameter) {return true;}
 
-     /*X*/
 
-
-'X'
-'\'U'
-
-"asdf"
-"
-asdf \"
-asdf
-"
 
 CMThreeDeeOptionsController = module : NASpace;
 
