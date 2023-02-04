@@ -21,6 +21,12 @@ struct NCLexer{
 void nc_ReadPotentialCommentBegin(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadMultiLineComment(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadPotentialCommentEnd(NCLexer* lexer, NAUTF8Char c);
+
+void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c);
+void nc_ReadSingleQuoteEscapeCharacter(NCLexer* lexer, NAUTF8Char c);
+void nc_ReadDoubleQuoteContent(NCLexer* lexer, NAUTF8Char c);
+void nc_ReadDoubleQuoteEscapeCharacter(NCLexer* lexer, NAUTF8Char c);
+
 void nc_ReadDefault(NCLexer* lexer, NAUTF8Char c);
 
 
@@ -67,9 +73,64 @@ void nc_ReadPotentialCommentBegin(NCLexer* lexer, NAUTF8Char c){
 }
 
 
+
+void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c){
+  if(c == '\''){
+    NAInt endPos = naGetBufferLocation(&lexer->bufIter) - 1;
+    ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
+      lexer->parseTree,
+      NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT,
+      naNewStringWithBufferExtraction(
+      lexer->inBuffer, naMakeRangeiWithStartAndEnd(lexer->startPos, endPos))));
+    lexer->reader = nc_ReadDefault;
+  }else if(c == '\\'){
+    lexer->reader = nc_ReadSingleQuoteEscapeCharacter;
+  }
+}
+
+
+
+void nc_ReadSingleQuoteEscapeCharacter(NCLexer* lexer, NAUTF8Char c){
+  // todo: nothing to do right now, as we only consider one single character.
+  // in the future, allow for hexadecimal escape codes.
+  lexer->reader = nc_ReadSingleQuoteContent;
+}
+
+
+
+void nc_ReadDoubleQuoteContent(NCLexer* lexer, NAUTF8Char c){
+  if(c == '\"'){
+    NAInt endPos = naGetBufferLocation(&lexer->bufIter) - 1;
+    ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
+      lexer->parseTree,
+      NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT,
+      naNewStringWithBufferExtraction(
+      lexer->inBuffer, naMakeRangeiWithStartAndEnd(lexer->startPos, endPos))));
+    lexer->reader = nc_ReadDefault;
+  }else if(c == '\\'){
+    lexer->reader = nc_ReadDoubleQuoteEscapeCharacter;
+  }
+}
+
+
+
+void nc_ReadDoubleQuoteEscapeCharacter(NCLexer* lexer, NAUTF8Char c){
+  // todo: nothing to do right now, as we only consider one double character.
+  // in the future, allow for hexadecimal escape codes.
+  lexer->reader = nc_ReadDoubleQuoteContent;
+}
+
+
+
 void nc_ReadDefault(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
     lexer->reader = nc_ReadPotentialCommentBegin;
+  }else if(c == '\''){
+    lexer->reader = nc_ReadSingleQuoteContent;
+    lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+  }else if(c == '\"'){
+    lexer->reader = nc_ReadDoubleQuoteContent;
+    lexer->startPos = naGetBufferLocation(&lexer->bufIter);
   }
 }
 

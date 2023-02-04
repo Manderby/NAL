@@ -13,6 +13,8 @@ typedef struct NCParseEntity NCParseEntity;
 typedef enum NCParseEntityType{
   NC_ENTITY_TYPE_LINE_COMMENT,
   NC_ENTITY_TYPE_MULTI_LINE_COMMENT,
+  NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT,
+  NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT,
 } NCParseEntityType;
 
 

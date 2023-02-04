@@ -1,6 +1,7 @@
 /* Das ist 
 ein 
-multi line
+multi line /
+
 Comment. */
 
 // Global definitions:
@@ -20,6 +21,16 @@ MyTestModule = module;
 //.myPublicMethod         = bool (this, i32 myParameter) {return true;}
 
      /*X*/
+
+
+'X'
+'\'U'
+
+"asdf"
+"
+asdf \"
+asdf
+"
 
 CMThreeDeeOptionsController = module : NASpace;
 
