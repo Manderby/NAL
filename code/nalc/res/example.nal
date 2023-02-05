@@ -19,9 +19,6 @@ MyTestModule = module;
 
 CMThreeDeeOptionsController = module : NASpace;
 
-
-
-
 .parent           = share CMThreeDeeController;
 
 .axisLabel        = NALabel;
@@ -37,9 +34,6 @@ CMThreeDeeOptionsController = module : NASpace;
 .showAxis         = true;
 .backgroundGray   = 0.3f;
 .fovy             = 50.f;
-
-
-
 
 
 
