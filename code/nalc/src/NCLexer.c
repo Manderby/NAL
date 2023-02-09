@@ -13,8 +13,7 @@ struct NCLexer{
   NABuffer* inBuffer;
   NABufferIterator bufIter;
   
-  NCReader reader;      // current state function pointer
-  NCReader prevReader;  // previous state function pointer
+  NAStack readerStack;
   NAInt startPos;
 };
 
@@ -27,22 +26,24 @@ void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadDoubleQuoteContent(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadEscapeCharacter(NCLexer* lexer, NAUTF8Char c);
 
-void nc_ReadDefault(NCLexer* lexer, NAUTF8Char c);
+void nc_ReadLHS(NCLexer* lexer, NAUTF8Char c);
+void nc_ReadRHS(NCLexer* lexer, NAUTF8Char c);
+void nc_ReadCommon(NCLexer* lexer, NAUTF8Char c);
+
+NCParseEntityType nc_GetGlobalEntityType(NCLexer* lexer);
+void nc_CreateParseEntity(NCLexer* lexer, NAInt backOffset, NCParseEntityType type);
+NABool nc_IsLexerInGlobalScope(NCLexer* lexer);
+void nc_SetLexerReader(NCLexer* lexer, NCReader newReader);
+void nc_PushLexerReader(NCLexer* lexer, NCReader reader);
+void nc_PopLexerReader(NCLexer* lexer);
+void nc_CallLexerReader(NCLexer* lexer, NAUTF8Char c);
 
 
 
 void nc_ReadSingleLineComment(NCLexer* lexer, NAUTF8Char c){
   if(c == '\n' || c == '\r'){
-    NAInt endPos = naGetBufferLocation(&lexer->bufIter) - 1;
-    NAString* content = endPos == lexer->startPos
-      ? naNewString()
-      : naNewStringWithBufferExtraction(
-        lexer->inBuffer,
-        naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
-    ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntityString(
-      NC_ENTITY_TYPE_LINE_COMMENT,
-      content));
-    lexer->reader = nc_ReadDefault;
+    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_LINE_COMMENT);
+    nc_PopLexerReader(lexer);
   }
   // potentially, \\n should be detected, but for the moment, that is not
   // the plan, as we do not allow for C style macros.
@@ -52,19 +53,11 @@ void nc_ReadSingleLineComment(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadPotentialMultiLineCommentEnd(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
-    NAInt endPos = naGetBufferLocation(&lexer->bufIter) - 2;
-    NAString* content = endPos == lexer->startPos
-      ? naNewString()
-      : naNewStringWithBufferExtraction(
-        lexer->inBuffer,
-        naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
-    ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntityString(
-      NC_ENTITY_TYPE_MULTI_LINE_COMMENT,
-      content));
-    lexer->reader = nc_ReadDefault;
+    nc_CreateParseEntity(lexer, 2, NC_ENTITY_TYPE_MULTI_LINE_COMMENT);
+    nc_PopLexerReader(lexer);
   }else{
-    lexer->reader = nc_ReadMultiLineComment;
-    nc_ReadMultiLineComment(lexer, c);
+    nc_SetLexerReader(lexer, nc_ReadMultiLineComment);
+    nc_CallLexerReader(lexer, c);
   }
 }
 
@@ -72,7 +65,7 @@ void nc_ReadPotentialMultiLineCommentEnd(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadMultiLineComment(NCLexer* lexer, NAUTF8Char c){
   if(c == '*'){
-    lexer->reader = nc_ReadPotentialMultiLineCommentEnd;
+    nc_SetLexerReader(lexer, nc_ReadPotentialMultiLineCommentEnd);
   }
 }
 
@@ -80,14 +73,14 @@ void nc_ReadMultiLineComment(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadPotentialCommentBegin(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
-    lexer->reader = nc_ReadSingleLineComment;
-    lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+    nc_CreateParseEntity(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
+    nc_SetLexerReader(lexer, nc_ReadSingleLineComment);
   }else if(c == '*'){
-    lexer->reader = nc_ReadMultiLineComment;
-    lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+    nc_CreateParseEntity(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
+    nc_SetLexerReader(lexer, nc_ReadMultiLineComment);
   }else{
-    lexer->reader = nc_ReadDefault;
-    lexer->reader(lexer, c);
+    nc_PopLexerReader(lexer);
+    nc_CallLexerReader(lexer, c);
   }
 }
 
@@ -95,19 +88,10 @@ void nc_ReadPotentialCommentBegin(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c){
   if(c == '\''){
-    NAInt endPos = naGetBufferLocation(&lexer->bufIter) - 1;
-    NAString* content = endPos == lexer->startPos
-      ? naNewString()
-      : naNewStringWithBufferExtraction(
-        lexer->inBuffer,
-        naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
-    ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntityString(
-      NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT,
-      content));
-    lexer->reader = nc_ReadDefault;
+    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT);
+    nc_PopLexerReader(lexer);
   }else if(c == '\\'){
-    lexer->reader = nc_ReadEscapeCharacter;
-    lexer->prevReader = nc_ReadSingleQuoteContent;
+    nc_PushLexerReader(lexer, nc_ReadEscapeCharacter);
   }
 }
 
@@ -115,19 +99,10 @@ void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadDoubleQuoteContent(NCLexer* lexer, NAUTF8Char c){
   if(c == '\"'){
-    NAInt endPos = naGetBufferLocation(&lexer->bufIter) - 1;
-    NAString* content = endPos == lexer->startPos
-      ? naNewString()
-      : naNewStringWithBufferExtraction(
-        lexer->inBuffer,
-        naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
-    ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntityString(
-      NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT,
-      content));
-    lexer->reader = nc_ReadDefault;
+    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT);
+    nc_PopLexerReader(lexer);
   }else if(c == '\\'){
-    lexer->reader = nc_ReadEscapeCharacter;
-    lexer->prevReader = nc_ReadDoubleQuoteContent;
+    nc_PushLexerReader(lexer, nc_ReadEscapeCharacter);
   }
 }
 
@@ -136,27 +111,52 @@ void nc_ReadDoubleQuoteContent(NCLexer* lexer, NAUTF8Char c){
 void nc_ReadEscapeCharacter(NCLexer* lexer, NAUTF8Char c){
   // todo: nothing to do right now, as we only consider one single character.
   // in the future, allow for hexadecimal escape codes.
-  lexer->reader = lexer->prevReader;
+  nc_PopLexerReader(lexer);
 }
 
 
 
-void nc_ReadDefault(NCLexer* lexer, NAUTF8Char c){
+void nc_ReadLHS(NCLexer* lexer, NAUTF8Char c){
+  nc_ReadCommon(lexer, c);
+}
+
+void nc_ReadRHS(NCLexer* lexer, NAUTF8Char c){
+  nc_ReadCommon(lexer, c);
+}
+
+void nc_ReadCommon(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
-    lexer->reader = nc_ReadPotentialCommentBegin;
+    nc_PushLexerReader(lexer, nc_ReadPotentialCommentBegin);
   }else if(c == '\''){
-    lexer->reader = nc_ReadSingleQuoteContent;
-    lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    nc_PushLexerReader(lexer, nc_ReadSingleQuoteContent);
   }else if(c == '\"'){
-    lexer->reader = nc_ReadDoubleQuoteContent;
-    lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    nc_PushLexerReader(lexer, nc_ReadDoubleQuoteContent);
+  }else if(c == '='){
+    if(nc_IsLexerInGlobalScope(lexer)){
+      nc_CreateParseEntity(lexer, 1, nc_GetGlobalEntityType(lexer));
+      nc_SetLexerReader(lexer, nc_ReadRHS);
+    }
+  }else if(c == ';'){
+    if(nc_IsLexerInGlobalScope(lexer)){
+      nc_CreateParseEntity(lexer, 1, nc_GetGlobalEntityType(lexer));
+      nc_SetLexerReader(lexer, nc_ReadLHS);
+    }
   }else if(c == '{'){
+    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     NCParseEntity* scope = ncAllocParseEntityTree(
       NC_ENTITY_TYPE_SCOPE,
       lexer->parseTree);
     ncAddParseTreeEntity(lexer->parseTree, scope);
     lexer->parseTree = ncGetParseEntityTree(scope);
+    nc_PushLexerReader(lexer, nc_ReadCommon);
   }else if(c == '}'){
+    nc_PopLexerReader(lexer);
+    if(nc_IsLexerInGlobalScope(lexer)){
+      nc_CreateParseEntity(lexer, 1, nc_GetGlobalEntityType(lexer));
+      nc_SetLexerReader(lexer, nc_ReadLHS);
+    }
     lexer->parseTree = ncGetParseTreeParent(lexer->parseTree);
   }
 }
@@ -169,7 +169,7 @@ NCLexer* ncAllocLexer(void){
   lexer->parseTree = ncAllocParseTree(NA_NULL);
   lexer->inBuffer = NA_NULL;
 
-  lexer->reader = nc_ReadDefault;
+  naInitStack(&lexer->readerStack, sizeof(NCReader), 0, 0);
   
   return lexer;
 }
@@ -181,8 +181,56 @@ void ncDeallocLexer(NCLexer* lexer){
     if(lexer->inBuffer)
       naError("Input file still open");
   #endif
+  naClearStack(&lexer->readerStack);
   ncDeallocParseTree(lexer->parseTree);
   naFree(lexer);
+}
+
+
+
+NCParseEntityType nc_GetGlobalEntityType(NCLexer* lexer){
+  NCReader* reader = (NCReader*)naTopStack(&lexer->readerStack);
+  return (nc_IsLexerInGlobalScope(lexer) && (*reader == nc_ReadLHS))
+    ? NC_ENTITY_TYPE_GLOBAL_LHS
+    : NC_ENTITY_TYPE_UNPARSED;
+}
+
+// The backOffset parameter is how many characters were used to "close" the
+// token. For exampe a /**/ comment requires a backOffset of 2 because the
+// token is closed with th */ string.
+void nc_CreateParseEntity(NCLexer* lexer, NAInt backOffset, NCParseEntityType type){
+  NAInt endPos = naGetBufferLocation(&lexer->bufIter) - backOffset;
+  NAString* content = endPos == lexer->startPos
+    ? naNewString()
+    : naNewStringWithBufferExtraction(
+      lexer->inBuffer,
+      naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
+  ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntityString(
+    type,
+    content));
+  lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+}
+
+NABool nc_IsLexerInGlobalScope(NCLexer* lexer){
+  return (naGetStackCount(&lexer->readerStack) == 1);
+}
+
+void nc_SetLexerReader(NCLexer* lexer, NCReader newReader){
+  NCReader* reader = (NCReader*)naTopStack(&lexer->readerStack);
+  *reader = newReader;
+}
+
+void nc_PushLexerReader(NCLexer* lexer, NCReader reader){
+  *(NCReader*)naPushStack(&lexer->readerStack) = reader;
+}
+
+void nc_PopLexerReader(NCLexer* lexer){
+  naPopStack(&lexer->readerStack);
+}
+
+void nc_CallLexerReader(NCLexer* lexer, NAUTF8Char c){
+  NCReader* reader = (NCReader*)naTopStack(&lexer->readerStack);
+  (*reader)(lexer, c);
 }
 
 
@@ -196,7 +244,8 @@ void ncSetInputPath(NCLexer* lexer, const char* path){
   lexer->bufIter = naMakeBufferAccessor(lexer->inBuffer);
 
   // At the beginning of a file, we start with the default reader.
-  lexer->reader = nc_ReadDefault;
+  nc_PushLexerReader(lexer, nc_ReadLHS);
+  lexer->startPos = 0;
 }
 
 
@@ -204,7 +253,7 @@ void ncSetInputPath(NCLexer* lexer, const char* path){
 void ncHandleFile(NCLexer* lexer){
   while(!naIsBufferAtEnd(&lexer->bufIter)){
     NAUTF8Char c = naReadBufferu8(&lexer->bufIter);
-    lexer->reader(lexer, c);
+    nc_CallLexerReader(lexer, c);
   }
 }
 

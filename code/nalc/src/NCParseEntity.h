@@ -11,6 +11,8 @@ NC_PROTOTYPE(NCParseTree);
 typedef struct NCParseEntity NCParseEntity;
 
 typedef enum NCParseEntityType{
+  NC_ENTITY_TYPE_UNPARSED,
+  NC_ENTITY_TYPE_GLOBAL_LHS,
   NC_ENTITY_TYPE_LINE_COMMENT,
   NC_ENTITY_TYPE_MULTI_LINE_COMMENT,
   NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT,
@@ -30,6 +32,11 @@ NCParseEntity* ncAllocParseEntityTree(
 
 void ncDeallocParseEntity(
   NCParseEntity* entity);
+
+
+
+NCParseEntityType ncGetParseEntityType(
+  const NCParseEntity* entity);
 
 NCParseTree* ncGetParseEntityTree(
   NCParseEntity* entity);

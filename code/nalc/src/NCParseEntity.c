@@ -44,6 +44,12 @@ void ncDeallocParseEntity(NCParseEntity* entity){
 
 
 
+NCParseEntityType ncGetParseEntityType(const NCParseEntity* entity){
+  return entity->type;
+}
+
+
+
 NCParseTree* ncGetParseEntityTree(NCParseEntity* entity){
   return entity->tree;
 }
