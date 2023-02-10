@@ -259,6 +259,7 @@
 		90A003DC298DB4F5001D7921 /* NAMathOperators.h in Headers */ = {isa = PBXBuildFile; fileRef = 90A002E6298DB4F5001D7921 /* NAMathOperators.h */; };
 		90A003DD298DB4F5001D7921 /* NACoord.h in Headers */ = {isa = PBXBuildFile; fileRef = 90A002E7298DB4F5001D7921 /* NACoord.h */; };
 		90A0FF29298DB39B001D7921 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 90A0FF28298DB39B001D7921 /* main.c */; };
+		90B709FF2996FAAB005EA4E3 /* NCString.c in Sources */ = {isa = PBXBuildFile; fileRef = 90B709FD2996FAAB005EA4E3 /* NCString.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -551,6 +552,9 @@
 		90A0FF1E298DB35F001D7921 /* nalc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nalc; sourceTree = BUILT_PRODUCTS_DIR; };
 		90A0FF28298DB39B001D7921 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		90A0FF2E298DB49B001D7921 /* libNALib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNALib.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		90B709FC2996F7CF005EA4E3 /* bigFile.nal */ = {isa = PBXFileReference; lastKnownFileType = text; path = bigFile.nal; sourceTree = "<group>"; };
+		90B709FD2996FAAB005EA4E3 /* NCString.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = NCString.c; sourceTree = "<group>"; };
+		90B709FE2996FAAB005EA4E3 /* NCString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NCString.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -630,6 +634,7 @@
 		907E1489298EBB7300DF3ADD /* res */ = {
 			isa = PBXGroup;
 			children = (
+				90B709FC2996F7CF005EA4E3 /* bigFile.nal */,
 				907E148A298EBB7300DF3ADD /* example.nal */,
 			);
 			path = res;
@@ -1137,6 +1142,8 @@
 				907E148D298EC4DE00DF3ADD /* NCParseEntity.h */,
 				907E148E298EC92400DF3ADD /* NCParseTree.c */,
 				907E148F298EC92400DF3ADD /* NCParseTree.h */,
+				90B709FD2996FAAB005EA4E3 /* NCString.c */,
+				90B709FE2996FAAB005EA4E3 /* NCString.h */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -1431,6 +1438,7 @@
 				907E148C298EC4AB00DF3ADD /* NCParseEntity.c in Sources */,
 				90A0FF29298DB39B001D7921 /* main.c in Sources */,
 				907E1490298EC92400DF3ADD /* NCParseTree.c in Sources */,
+				90B709FF2996FAAB005EA4E3 /* NCString.c in Sources */,
 				901A7AE72995B1C6005C287E /* NCGlobalSymbol.c in Sources */,
 				907E1494298ED1D300DF3ADD /* NCLexer.c in Sources */,
 			);

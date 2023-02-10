@@ -4,6 +4,7 @@
 #include "NCLexer.h"
 #include "NCParseEntity.h"
 #include "NCParseTree.h"
+#include "NCString.h"
 
 
 typedef void(*NCReader)(NCLexer*, NAUTF8Char);
@@ -11,8 +12,11 @@ typedef void(*NCReader)(NCLexer*, NAUTF8Char);
 struct NCLexer{
   NCParseTree* parseTree;
 
-  NABuffer* inBuffer;
-  NABufferIterator bufIter;
+  NAFile* inFile;
+  NAFileSize fileSize;
+  NAFileSize filePos;
+  NAUTF8Char* fileBuf;
+  NABuffer* wholeFileBuffer;
   
   NAStack readerStack;
   NAInt startPos;
@@ -203,7 +207,7 @@ NCLexer* ncAllocLexer(void){
   NCLexer* lexer = naAlloc(NCLexer);
   
   lexer->parseTree = ncAllocParseTree(NA_NULL);
-  lexer->inBuffer = NA_NULL;
+  lexer->inFile = NA_NULL;
 
   naInitStack(&lexer->readerStack, sizeof(NCReader), 0, 0);
   
@@ -214,7 +218,7 @@ NCLexer* ncAllocLexer(void){
 
 void ncDeallocLexer(NCLexer* lexer){
   #if NA_DEBUG
-    if(lexer->inBuffer)
+    if(lexer->inFile)
       naError("Input file still open");
   #endif
   naClearStack(&lexer->readerStack);
@@ -228,26 +232,30 @@ void nc_CreateParseEntityType(NCLexer* lexer, NCParseEntityType type){
   ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
     type,
     NA_NULL));
-  lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+  lexer->startPos = lexer->filePos;
 }
 
 // The backOffset parameter is how many characters were used to "close" the
 // token. For exampe a /**/ comment requires a backOffset of 2 because the
 // token is closed with th */ string.
 void nc_CreateParseEntityString(NCLexer* lexer, NAInt backOffset, NCParseEntityType type){
-  NAInt endPos = naGetBufferLocation(&lexer->bufIter) - backOffset;
+  NAInt endPos = lexer->filePos - backOffset;
   NABool isEmpty = endPos == lexer->startPos;
-  if(type != NC_ENTITY_TYPE_UNPARSED || !isEmpty){
+  if(endPos > 0 && (type != NC_ENTITY_TYPE_UNPARSED || !isEmpty)){
+//    NCString* content = isEmpty
+//      ? ncAllocString(NA_NULL, 0)
+//      : ncAllocString(&(lexer->fileBuf[lexer->startPos]), endPos - lexer->startPos);
+    
     NAString* content = isEmpty
       ? naNewString()
       : naNewStringWithBufferExtraction(
-        lexer->inBuffer,
+        lexer->wholeFileBuffer,
         naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
     ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
       type,
       content));
   }
-  lexer->startPos = naGetBufferLocation(&lexer->bufIter);
+  lexer->startPos = lexer->filePos;
 }
 
 
@@ -278,11 +286,10 @@ void nc_CallLexerReader(NCLexer* lexer, NAUTF8Char c){
 
 void ncSetInputPath(NCLexer* lexer, const char* path){
   #if NA_DEBUG
-    if(lexer->inBuffer)
+    if(lexer->inFile)
       naError("Input file already set and active");
   #endif
-  lexer->inBuffer = naCreateBufferWithInputPath(path);
-  lexer->bufIter = naMakeBufferAccessor(lexer->inBuffer);
+  lexer->inFile = naCreateFileReadingPath(path);
 
   // At the beginning of a file, we start with the default reader.
   nc_PushLexerReader(lexer, nc_ReadLHS);
@@ -293,31 +300,40 @@ void ncSetInputPath(NCLexer* lexer, const char* path){
 
 void ncHandleFile(NCLexer* lexer){
   // Read the whole file and create coarse lexer tokens.
-  while(!naIsBufferAtEnd(&lexer->bufIter)){
-    NAUTF8Char c = naReadBufferu8(&lexer->bufIter);
+  lexer->fileSize = naComputeFileByteSize(lexer->inFile);
+  lexer->fileBuf = naMalloc(lexer->fileSize);
+  naReadFileBytes(lexer->inFile, lexer->fileBuf, lexer->fileSize);
+  lexer->wholeFileBuffer = naCreateBufferWithMutableData(lexer->fileBuf, lexer->fileSize, NA_NULL);
+  lexer->filePos = 0;
+  lexer->startPos = 0;
+  
+  while(lexer->filePos < lexer->fileSize){
+    NAUTF8Char c = lexer->fileBuf[lexer->filePos];
+    lexer->filePos += 1;
     nc_CallLexerReader(lexer, c);
   }
 
   // Go through all LHS entities and parse them.
-//  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
-//  NAListIterator listIter = naMakeListMutator(entities);
-//  while(naIterateList(&listIter)){
-//    NCParseEntity* entity = naGetListCurMutable(&listIter);
-//    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_IDENTIFIER){
+  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
+  NAListIterator listIter = naMakeListMutator(entities);
+  while(naIterateList(&listIter)){
+    NCParseEntity* entity = naGetListCurMutable(&listIter);
+    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_IDENTIFIER){
 //      const NCParseEntity* prevEntity = naGetListPrevConst(&listIter);
-//      NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
-//      ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
-//      int asdf = 1234;
-//    }
-//  }
-//  naClearListIterator(&listIter);
+      NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
+      ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
+      int asdf = 1234;
+    }
+  }
+  naClearListIterator(&listIter);
 }
 
 
 
 void ncCloseFile(NCLexer* lexer){
-  naClearBufferIterator(&lexer->bufIter);
-  naRelease(lexer->inBuffer);
-  lexer->inBuffer = NA_NULL;
+  naRelease(lexer->wholeFileBuffer);
+  naReleaseFile(lexer->inFile);
+  lexer->inFile = NA_NULL;
+  naFree(lexer->fileBuf);
 }
 

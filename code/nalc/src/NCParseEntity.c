@@ -2,6 +2,7 @@
 #include "NCParseEntity.h"
 #include "NCParseTree.h"
 #include "NCGlobalSymbol.h"
+#include "NCString.h"
 
 struct NCParseEntity{
   NCParseEntityType type;
@@ -31,6 +32,7 @@ void nc_FreeParseEntityData(NCParseEntity* entity){
     ncDeallocGlobalSymbol(entity->data);
     break;
   default:
+//    if(entity->data){ncDeallocString(entity->data);}
     if(entity->data){naDelete(entity->data);}
     break;
   }
