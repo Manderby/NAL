@@ -163,12 +163,15 @@ void nc_ReadLocalScope(NCLexer* lexer, NAUTF8Char c){
 void nc_ReadCommon(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
     nc_PushLexerReader(lexer, nc_ReadPotentialCommentBegin);
+    
   }else if(c == '\''){
     nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     nc_PushLexerReader(lexer, nc_ReadSingleQuoteContent);
+    
   }else if(c == '\"'){
     nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     nc_PushLexerReader(lexer, nc_ReadDoubleQuoteContent);
+    
   }else if(c == '{'){
     nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     NCParseEntity* scope = ncAllocParseEntity(
@@ -177,13 +180,20 @@ void nc_ReadCommon(NCLexer* lexer, NAUTF8Char c){
     ncAddParseTreeEntity(lexer->parseTree, scope);
     lexer->parseTree = ncGetParseEntityData(scope);
     nc_PushLexerReader(lexer, nc_ReadLocalScope);
+    
   }else if(c == '}'){
-    nc_PopLexerReader(lexer);
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
-    if(nc_IsLexerInGlobalScope(lexer)){
-      nc_SetLexerReader(lexer, nc_ReadLHS);
+    if(naGetStackCount(&lexer->readerStack) == 1){
+      printf("Too many closing }\n");
+      exit(1);
+//      naAllocSprintf(NA_TRUE, "Too many closing }\n")
+    }else{
+      nc_PopLexerReader(lexer);
+      nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+      if(nc_IsLexerInGlobalScope(lexer)){
+        nc_SetLexerReader(lexer, nc_ReadLHS);
+      }
+      lexer->parseTree = ncGetParseTreeParent(lexer->parseTree);
     }
-    lexer->parseTree = ncGetParseTreeParent(lexer->parseTree);
   }
 }
 
@@ -226,14 +236,17 @@ void nc_CreateParseEntityType(NCLexer* lexer, NCParseEntityType type){
 // token is closed with th */ string.
 void nc_CreateParseEntityString(NCLexer* lexer, NAInt backOffset, NCParseEntityType type){
   NAInt endPos = naGetBufferLocation(&lexer->bufIter) - backOffset;
-  NAString* content = endPos == lexer->startPos
-    ? naNewString()
-    : naNewStringWithBufferExtraction(
-      lexer->inBuffer,
-      naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
-  ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
-    type,
-    content));
+  NABool isEmpty = endPos == lexer->startPos;
+  if(type != NC_ENTITY_TYPE_UNPARSED || !isEmpty){
+    NAString* content = isEmpty
+      ? naNewString()
+      : naNewStringWithBufferExtraction(
+        lexer->inBuffer,
+        naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
+    ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
+      type,
+      content));
+  }
   lexer->startPos = naGetBufferLocation(&lexer->bufIter);
 }
 
@@ -286,17 +299,18 @@ void ncHandleFile(NCLexer* lexer){
   }
 
   // Go through all LHS entities and parse them.
-  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
-  NAListIterator listIter = naMakeListMutator(entities);
-  while(naIterateList(&listIter)){
-    NCParseEntity* entity = naGetListCurMutable(&listIter);
-    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_IDENTIFIER){
-      NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
-      ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
-      int asdf = 1234;
-    }
-  }
-  naClearListIterator(&listIter);
+//  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
+//  NAListIterator listIter = naMakeListMutator(entities);
+//  while(naIterateList(&listIter)){
+//    NCParseEntity* entity = naGetListCurMutable(&listIter);
+//    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_IDENTIFIER){
+//      const NCParseEntity* prevEntity = naGetListPrevConst(&listIter);
+//      NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
+//      ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
+//      int asdf = 1234;
+//    }
+//  }
+//  naClearListIterator(&listIter);
 }
 
 

@@ -1,3 +1,4 @@
+test = something;
 
 // Global definitions:
 myPI           = define 3.14159;
