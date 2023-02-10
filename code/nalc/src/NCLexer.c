@@ -27,12 +27,15 @@ void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadDoubleQuoteContent(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadEscapeCharacter(NCLexer* lexer, NAUTF8Char c);
 
+void nc_ReadIdentifier(NCLexer* lexer, NAUTF8Char c);
+
 void nc_ReadLHS(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadRHS(NCLexer* lexer, NAUTF8Char c);
+void nc_ReadLocalScope(NCLexer* lexer, NAUTF8Char c);
 void nc_ReadCommon(NCLexer* lexer, NAUTF8Char c);
 
-NCParseEntityType nc_GetGlobalEntityType(NCLexer* lexer);
-void nc_CreateParseEntity(NCLexer* lexer, NAInt backOffset, NCParseEntityType type);
+void nc_CreateParseEntityType(NCLexer* lexer, NCParseEntityType type);
+void nc_CreateParseEntityString(NCLexer* lexer, NAInt backOffset, NCParseEntityType type);
 NABool nc_IsLexerInGlobalScope(NCLexer* lexer);
 void nc_SetLexerReader(NCLexer* lexer, NCReader newReader);
 void nc_PushLexerReader(NCLexer* lexer, NCReader reader);
@@ -43,7 +46,7 @@ void nc_CallLexerReader(NCLexer* lexer, NAUTF8Char c);
 
 void nc_ReadSingleLineComment(NCLexer* lexer, NAUTF8Char c){
   if(c == '\n' || c == '\r'){
-    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_LINE_COMMENT);
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_LINE_COMMENT);
     nc_PopLexerReader(lexer);
   }
   // potentially, \\n should be detected, but for the moment, that is not
@@ -54,7 +57,7 @@ void nc_ReadSingleLineComment(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadPotentialMultiLineCommentEnd(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
-    nc_CreateParseEntity(lexer, 2, NC_ENTITY_TYPE_MULTI_LINE_COMMENT);
+    nc_CreateParseEntityString(lexer, 2, NC_ENTITY_TYPE_MULTI_LINE_COMMENT);
     nc_PopLexerReader(lexer);
   }else{
     nc_SetLexerReader(lexer, nc_ReadMultiLineComment);
@@ -74,10 +77,10 @@ void nc_ReadMultiLineComment(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadPotentialCommentBegin(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
-    nc_CreateParseEntity(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
+    nc_CreateParseEntityString(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
     nc_SetLexerReader(lexer, nc_ReadSingleLineComment);
   }else if(c == '*'){
-    nc_CreateParseEntity(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
+    nc_CreateParseEntityString(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
     nc_SetLexerReader(lexer, nc_ReadMultiLineComment);
   }else{
     nc_PopLexerReader(lexer);
@@ -89,7 +92,7 @@ void nc_ReadPotentialCommentBegin(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c){
   if(c == '\''){
-    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT);
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT);
     nc_PopLexerReader(lexer);
   }else if(c == '\\'){
     nc_PushLexerReader(lexer, nc_ReadEscapeCharacter);
@@ -100,7 +103,7 @@ void nc_ReadSingleQuoteContent(NCLexer* lexer, NAUTF8Char c){
 
 void nc_ReadDoubleQuoteContent(NCLexer* lexer, NAUTF8Char c){
   if(c == '\"'){
-    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT);
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT);
     nc_PopLexerReader(lexer);
   }else if(c == '\\'){
     nc_PushLexerReader(lexer, nc_ReadEscapeCharacter);
@@ -117,11 +120,43 @@ void nc_ReadEscapeCharacter(NCLexer* lexer, NAUTF8Char c){
 
 
 
+void nc_ReadIdentifier(NCLexer* lexer, NAUTF8Char c){
+  if(!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')){
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_IDENTIFIER);
+    nc_PopLexerReader(lexer);
+    nc_CallLexerReader(lexer, c);
+  }
+}
+
+
+
 void nc_ReadLHS(NCLexer* lexer, NAUTF8Char c){
-  nc_ReadCommon(lexer, c);
+  if(c == '='){
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_GLOBAL_LHS);
+    nc_SetLexerReader(lexer, nc_ReadRHS);
+  }else if(c == '.'){
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    nc_CreateParseEntityType(lexer, NC_ENTITY_TYPE_DOT);
+  }else if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    lexer->startPos -= 1;
+    nc_PushLexerReader(lexer, nc_ReadIdentifier);
+    nc_ReadIdentifier(lexer, c);
+  }else{
+    nc_ReadCommon(lexer, c);
+  }
 }
 
 void nc_ReadRHS(NCLexer* lexer, NAUTF8Char c){
+  if(c == ';'){
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    nc_SetLexerReader(lexer, nc_ReadLHS);
+  }else{
+    nc_ReadCommon(lexer, c);
+  }
+}
+
+void nc_ReadLocalScope(NCLexer* lexer, NAUTF8Char c){
   nc_ReadCommon(lexer, c);
 }
 
@@ -129,33 +164,23 @@ void nc_ReadCommon(NCLexer* lexer, NAUTF8Char c){
   if(c == '/'){
     nc_PushLexerReader(lexer, nc_ReadPotentialCommentBegin);
   }else if(c == '\''){
-    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     nc_PushLexerReader(lexer, nc_ReadSingleQuoteContent);
   }else if(c == '\"'){
-    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     nc_PushLexerReader(lexer, nc_ReadDoubleQuoteContent);
-  }else if(c == '='){
-    if(nc_IsLexerInGlobalScope(lexer)){
-      nc_CreateParseEntity(lexer, 1, nc_GetGlobalEntityType(lexer));
-      nc_SetLexerReader(lexer, nc_ReadRHS);
-    }
-  }else if(c == ';'){
-    if(nc_IsLexerInGlobalScope(lexer)){
-      nc_CreateParseEntity(lexer, 1, nc_GetGlobalEntityType(lexer));
-      nc_SetLexerReader(lexer, nc_ReadLHS);
-    }
   }else if(c == '{'){
-    nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     NCParseEntity* scope = ncAllocParseEntity(
       NC_ENTITY_TYPE_SCOPE,
       ncAllocParseTree(lexer->parseTree));
     ncAddParseTreeEntity(lexer->parseTree, scope);
     lexer->parseTree = ncGetParseEntityData(scope);
-    nc_PushLexerReader(lexer, nc_ReadCommon);
+    nc_PushLexerReader(lexer, nc_ReadLocalScope);
   }else if(c == '}'){
     nc_PopLexerReader(lexer);
+    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
     if(nc_IsLexerInGlobalScope(lexer)){
-      nc_CreateParseEntity(lexer, 1, nc_GetGlobalEntityType(lexer));
       nc_SetLexerReader(lexer, nc_ReadLHS);
     }
     lexer->parseTree = ncGetParseTreeParent(lexer->parseTree);
@@ -189,17 +214,17 @@ void ncDeallocLexer(NCLexer* lexer){
 
 
 
-NCParseEntityType nc_GetGlobalEntityType(NCLexer* lexer){
-  NCReader* reader = (NCReader*)naTopStack(&lexer->readerStack);
-  return (nc_IsLexerInGlobalScope(lexer) && (*reader == nc_ReadLHS))
-    ? NC_ENTITY_TYPE_GLOBAL_LHS
-    : NC_ENTITY_TYPE_UNPARSED;
+void nc_CreateParseEntityType(NCLexer* lexer, NCParseEntityType type){
+  ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
+    type,
+    NA_NULL));
+  lexer->startPos = naGetBufferLocation(&lexer->bufIter);
 }
 
 // The backOffset parameter is how many characters were used to "close" the
 // token. For exampe a /**/ comment requires a backOffset of 2 because the
 // token is closed with th */ string.
-void nc_CreateParseEntity(NCLexer* lexer, NAInt backOffset, NCParseEntityType type){
+void nc_CreateParseEntityString(NCLexer* lexer, NAInt backOffset, NCParseEntityType type){
   NAInt endPos = naGetBufferLocation(&lexer->bufIter) - backOffset;
   NAString* content = endPos == lexer->startPos
     ? naNewString()
@@ -211,6 +236,8 @@ void nc_CreateParseEntity(NCLexer* lexer, NAInt backOffset, NCParseEntityType ty
     content));
   lexer->startPos = naGetBufferLocation(&lexer->bufIter);
 }
+
+
 
 NABool nc_IsLexerInGlobalScope(NCLexer* lexer){
   return (naGetStackCount(&lexer->readerStack) == 1);
@@ -263,7 +290,7 @@ void ncHandleFile(NCLexer* lexer){
   NAListIterator listIter = naMakeListMutator(entities);
   while(naIterateList(&listIter)){
     NCParseEntity* entity = naGetListCurMutable(&listIter);
-    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_GLOBAL_LHS){
+    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_IDENTIFIER){
       NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
       ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
       int asdf = 1234;

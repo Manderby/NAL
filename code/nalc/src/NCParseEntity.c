@@ -31,7 +31,7 @@ void nc_FreeParseEntityData(NCParseEntity* entity){
     ncDeallocGlobalSymbol(entity->data);
     break;
   default:
-    naDelete(entity->data);
+    if(entity->data){naDelete(entity->data);}
     break;
   }
 }
