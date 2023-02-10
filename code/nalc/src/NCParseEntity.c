@@ -1,45 +1,58 @@
 
 #include "NCParseEntity.h"
 #include "NCParseTree.h"
+#include "NCGlobalSymbol.h"
 
 struct NCParseEntity{
   NCParseEntityType type;
-  NAString* string;
-  NCParseTree* tree;
+  void* data;
 };
 
 
 
-NCParseEntity* ncAllocParseEntityString(
+NCParseEntity* ncAllocParseEntity(
   NCParseEntityType type,
-  NAString* string)
+  void* data)
 {
   NCParseEntity* entity = naAlloc(NCParseEntity);
   entity->type = type;
-  entity->string = string;
-  entity->tree = NA_NULL;
+  entity->data = data;
   return entity;
 }
 
 
 
-NCParseEntity* ncAllocParseEntityTree(
-  NCParseEntityType type,
-  NCParseTree* parentTree)
-{
-  NCParseEntity* entity = naAlloc(NCParseEntity);
-  entity->type = type;
-  entity->string = NA_NULL;
-  entity->tree = ncAllocParseTree(parentTree);
-  return entity;
+void nc_FreeParseEntityData(NCParseEntity* entity){
+  switch(entity->type){
+  case NC_ENTITY_TYPE_SCOPE:
+    ncDeallocParseTree(entity->data);
+    break;
+  case NC_ENTITY_TYPE_GLOBAL_SYMBOL:
+    ncDeallocGlobalSymbol(entity->data);
+    break;
+  default:
+    naDelete(entity->data);
+    break;
+  }
 }
 
 
 
 void ncDeallocParseEntity(NCParseEntity* entity){
-  if(entity->string){naDelete(entity->string);}
-  if(entity->tree){ncDeallocParseTree(entity->tree);}
+  nc_FreeParseEntityData(entity);
   naFree(entity);
+}
+
+
+
+void ncReplaceParseEntityData(
+  NCParseEntity* entity,
+  NCParseEntityType type,
+  void* data)
+{
+  nc_FreeParseEntityData(entity);
+  entity->type = type;
+  entity->data = data;
 }
 
 
@@ -50,7 +63,7 @@ NCParseEntityType ncGetParseEntityType(const NCParseEntity* entity){
 
 
 
-NCParseTree* ncGetParseEntityTree(NCParseEntity* entity){
-  return entity->tree;
+void* ncGetParseEntityData(NCParseEntity* entity){
+  return entity->data;
 }
 

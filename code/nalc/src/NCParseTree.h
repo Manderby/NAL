@@ -18,11 +18,16 @@ NCParseTree* ncAllocParseTree(
 void ncDeallocParseTree(
   NCParseTree* tree);
 
+
+
 void ncAddParseTreeEntity(
   NCParseTree* tree,
   NCParseEntity* entity);
 
 NCParseTree* ncGetParseTreeParent(
+  NCParseTree* tree);
+
+NAList* ncGetParseTreeEntities(
   NCParseTree* tree);
 
 #endif // NC_PARSE_TREE_INCLUDED

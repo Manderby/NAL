@@ -12,6 +12,7 @@ typedef struct NCParseEntity NCParseEntity;
 
 typedef enum NCParseEntityType{
   NC_ENTITY_TYPE_UNPARSED,
+  NC_ENTITY_TYPE_GLOBAL_SYMBOL,
   NC_ENTITY_TYPE_GLOBAL_LHS,
   NC_ENTITY_TYPE_LINE_COMMENT,
   NC_ENTITY_TYPE_MULTI_LINE_COMMENT,
@@ -22,23 +23,24 @@ typedef enum NCParseEntityType{
 
 
 
-NCParseEntity* ncAllocParseEntityString(
+NCParseEntity* ncAllocParseEntity(
   NCParseEntityType type,
-  NAString* string);
+  void* data);
   
-NCParseEntity* ncAllocParseEntityTree(
-  NCParseEntityType type,
-  NCParseTree* parentTree);
-
 void ncDeallocParseEntity(
   NCParseEntity* entity);
 
 
 
+void ncReplaceParseEntityData(
+  NCParseEntity* entity,
+  NCParseEntityType type,
+  void* data);
+
 NCParseEntityType ncGetParseEntityType(
   const NCParseEntity* entity);
 
-NCParseTree* ncGetParseEntityTree(
+void* ncGetParseEntityData(
   NCParseEntity* entity);
 
 #endif // NC_PARSE_ENTITY_INCLUDED

@@ -1,5 +1,6 @@
 
 #include "main.h"
+#include "NCGlobalSymbol.h"
 #include "NCLexer.h"
 #include "NCParseEntity.h"
 #include "NCParseTree.h"
@@ -145,11 +146,11 @@ void nc_ReadCommon(NCLexer* lexer, NAUTF8Char c){
     }
   }else if(c == '{'){
     nc_CreateParseEntity(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
-    NCParseEntity* scope = ncAllocParseEntityTree(
+    NCParseEntity* scope = ncAllocParseEntity(
       NC_ENTITY_TYPE_SCOPE,
-      lexer->parseTree);
+      ncAllocParseTree(lexer->parseTree));
     ncAddParseTreeEntity(lexer->parseTree, scope);
-    lexer->parseTree = ncGetParseEntityTree(scope);
+    lexer->parseTree = ncGetParseEntityData(scope);
     nc_PushLexerReader(lexer, nc_ReadCommon);
   }else if(c == '}'){
     nc_PopLexerReader(lexer);
@@ -205,7 +206,7 @@ void nc_CreateParseEntity(NCLexer* lexer, NAInt backOffset, NCParseEntityType ty
     : naNewStringWithBufferExtraction(
       lexer->inBuffer,
       naMakeRangeiWithStartAndEnd(lexer->startPos, endPos));
-  ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntityString(
+  ncAddParseTreeEntity(lexer->parseTree, ncAllocParseEntity(
     type,
     content));
   lexer->startPos = naGetBufferLocation(&lexer->bufIter);
@@ -251,10 +252,24 @@ void ncSetInputPath(NCLexer* lexer, const char* path){
 
 
 void ncHandleFile(NCLexer* lexer){
+  // Read the whole file and create coarse lexer tokens.
   while(!naIsBufferAtEnd(&lexer->bufIter)){
     NAUTF8Char c = naReadBufferu8(&lexer->bufIter);
     nc_CallLexerReader(lexer, c);
   }
+
+  // Go through all LHS entities and parse them.
+  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
+  NAListIterator listIter = naMakeListMutator(entities);
+  while(naIterateList(&listIter)){
+    NCParseEntity* entity = naGetListCurMutable(&listIter);
+    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_GLOBAL_LHS){
+      NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
+      ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
+      int asdf = 1234;
+    }
+  }
+  naClearListIterator(&listIter);
 }
 
 

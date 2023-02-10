@@ -20,16 +20,6 @@ NCParseTree* ncAllocParseTree(NCParseTree* parent)
 
 
 void ncDeallocParseTree(NCParseTree* tree){
-
-  NAListIterator listIter = naMakeListAccessor(&tree->entities);
-  while(naIterateList(&listIter)){
-    NCParseEntity* entity = naGetListCurConst(&listIter);
-    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_GLOBAL_LHS){
-      int asdf = 1234;
-    }
-  }
-  naClearListIterator(&listIter);
-
   naForeachListMutable(&tree->entities, (NAMutator)ncDeallocParseEntity);
   naClearList(&tree->entities);
   naFree(tree);
@@ -47,5 +37,11 @@ void ncAddParseTreeEntity(
 
 
 NCParseTree* ncGetParseTreeParent(NCParseTree* tree){
-    return tree->parent;
+  return tree->parent;
+}
+
+
+
+NAList* ncGetParseTreeEntities(NCParseTree* tree){
+  return &tree->entities;
 }

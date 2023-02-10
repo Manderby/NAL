@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		901A7AE72995B1C6005C287E /* NCGlobalSymbol.c in Sources */ = {isa = PBXBuildFile; fileRef = 901A7AE52995B1C6005C287E /* NCGlobalSymbol.c */; };
 		907E148C298EC4AB00DF3ADD /* NCParseEntity.c in Sources */ = {isa = PBXBuildFile; fileRef = 907E148B298EC4AB00DF3ADD /* NCParseEntity.c */; };
 		907E1490298EC92400DF3ADD /* NCParseTree.c in Sources */ = {isa = PBXBuildFile; fileRef = 907E148E298EC92400DF3ADD /* NCParseTree.c */; };
 		907E1494298ED1D300DF3ADD /* NCLexer.c in Sources */ = {isa = PBXBuildFile; fileRef = 907E1493298ED1D300DF3ADD /* NCLexer.c */; };
@@ -283,6 +284,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		901A7AE52995B1C6005C287E /* NCGlobalSymbol.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = NCGlobalSymbol.c; sourceTree = "<group>"; };
+		901A7AE62995B1C6005C287E /* NCGlobalSymbol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NCGlobalSymbol.h; sourceTree = "<group>"; };
 		902C88772937F2E700E2775B /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		902C88782937F2E700E2775B /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		902C887A2937F2E700E2775B /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
@@ -1126,6 +1129,8 @@
 			children = (
 				90A0FF28298DB39B001D7921 /* main.c */,
 				907E1491298ECAAD00DF3ADD /* main.h */,
+				901A7AE52995B1C6005C287E /* NCGlobalSymbol.c */,
+				901A7AE62995B1C6005C287E /* NCGlobalSymbol.h */,
 				907E1493298ED1D300DF3ADD /* NCLexer.c */,
 				907E1492298ED1D300DF3ADD /* NCLexer.h */,
 				907E148B298EC4AB00DF3ADD /* NCParseEntity.c */,
@@ -1426,6 +1431,7 @@
 				907E148C298EC4AB00DF3ADD /* NCParseEntity.c in Sources */,
 				90A0FF29298DB39B001D7921 /* main.c in Sources */,
 				907E1490298EC92400DF3ADD /* NCParseTree.c in Sources */,
+				901A7AE72995B1C6005C287E /* NCGlobalSymbol.c in Sources */,
 				907E1494298ED1D300DF3ADD /* NCLexer.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
