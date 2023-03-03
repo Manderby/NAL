@@ -30,7 +30,7 @@ int main(int argc, const char * argv[]) {
   
   NADateTime time0 = naMakeDateTimeNow();
 
-  for(int i = 0; i < 100000; i++){
+  for(int i = 0; i < 1; i++){
     ncSetInputPath(lexer, inPath);
     ncHandleFile(lexer);
     ncCloseFile(lexer);

@@ -38,7 +38,6 @@ void nc_ReadIdentifier(NCLexer* lexer);
 void nc_ReadLHS(NCLexer* lexer);
 void nc_ReadRHS(NCLexer* lexer);
 void nc_ReadLocalScope(NCLexer* lexer);
-NABool nc_ReadTokens(NCLexer* lexer);
 void nc_ReadCommon(NCLexer* lexer);
 
 NABool nc_ReadNextChar(NCLexer* lexer);
@@ -170,9 +169,28 @@ void nc_ReadIdentifier(NCLexer* lexer){
 
 
 void nc_ReadLHS(NCLexer* lexer){
-  if(!nc_ReadTokens(lexer)){
-    nc_ReadCommon(lexer);
+  if(lexer->curChar <= ' '){
+    // do nothing
+    
+  }else if((lexer->curChar >= 'a' && lexer->curChar <= 'z') || (lexer->curChar >= 'A' && lexer->curChar <= 'Z')){
+    lexer->startPos = lexer->filePos - 1;
+    nc_ReadIdentifier(lexer);
+
+//    NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
+//    const NAString* str = ncGetParseEntityDataConst(naGetListLastConst(entities));
+//    printf("Token found: %s\n", naGetStringUTF8Pointer(str));
+  
+  }else if(lexer->curChar == '.'){
+    nc_CreateParseEntityType(lexer, NC_ENTITY_TYPE_DOT);
+
+  }else if(lexer->curChar == '='){
+    nc_SetLexerReader(lexer, nc_ReadRHS);
+    return;
+    
+  }else{
+    // error: invalid charactor in LHS expression found.
   }
+  nc_ReadCommon(lexer);
 }
 
 
@@ -190,30 +208,6 @@ void nc_ReadLocalScope(NCLexer* lexer){
   nc_ReadCommon(lexer);
 }
 
-NABool nc_ReadTokens(NCLexer* lexer){
-  if(lexer->curChar <= ' '){
-    // do nothing
-    return NA_TRUE;
-    
-  }else if((lexer->curChar >= 'a' && lexer->curChar <= 'z') || (lexer->curChar >= 'A' && lexer->curChar <= 'Z')){
-    lexer->startPos = lexer->filePos - 1;
-    nc_ReadIdentifier(lexer);
-
-    NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
-    const NAString* str = ncGetParseEntityDataConst(naGetListLastConst(entities));
-    printf("Token found: %s\n", naGetStringUTF8Pointer(str));
-    return NA_TRUE;
-  
-  }else if(lexer->curChar == '.'){
-    nc_CreateParseEntityType(lexer, NC_ENTITY_TYPE_DOT);
-    return NA_TRUE;
-
-  }else if(lexer->curChar == '='){
-    nc_SetLexerReader(lexer, nc_ReadRHS);
-    return NA_TRUE;
-  }
-  return NA_FALSE;
-}
 
 
 
