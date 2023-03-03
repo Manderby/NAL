@@ -6,6 +6,7 @@
 #include "NCParseTree.h"
 #include "NCString.h"
 
+//#include <ctype.h>
 
 typedef void(*NCReader)(NCLexer*);
 
@@ -25,7 +26,6 @@ struct NCLexer{
 };
 
 void nc_ReadSingleLineComment(NCLexer* lexer);
-void nc_ReadPotentialMultiLineCommentEnd(NCLexer* lexer);
 void nc_ReadMultiLineComment(NCLexer* lexer);
 void nc_ReadPotentialCommentBegin(NCLexer* lexer);
 
@@ -38,6 +38,7 @@ void nc_ReadIdentifier(NCLexer* lexer);
 void nc_ReadLHS(NCLexer* lexer);
 void nc_ReadRHS(NCLexer* lexer);
 void nc_ReadLocalScope(NCLexer* lexer);
+NABool nc_ReadTokens(NCLexer* lexer);
 void nc_ReadCommon(NCLexer* lexer);
 
 NABool nc_ReadNextChar(NCLexer* lexer);
@@ -53,31 +54,38 @@ void nc_CallLexerReader(NCLexer* lexer);
 
 
 void nc_ReadSingleLineComment(NCLexer* lexer){
-  if(lexer->curChar == '\n' || lexer->curChar == '\r'){
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_LINE_COMMENT);
-    nc_PopLexerReader(lexer);
+  while(nc_ReadNextChar(lexer)){
+    if(lexer->curChar == '\n' || lexer->curChar == '\r'){
+      nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_LINE_COMMENT);
+      return;
+    }
   }
+  // eof.
+  
   // potentially, \\n should be detected, but for the moment, that is not
   // the plan, as we do not allow for C style macros.
 }
 
 
 
-void nc_ReadPotentialMultiLineCommentEnd(NCLexer* lexer){
-  if(lexer->curChar == '/'){
-    nc_CreateParseEntityString(lexer, 2, NC_ENTITY_TYPE_MULTI_LINE_COMMENT);
-    nc_PopLexerReader(lexer);
-  }else{
-    nc_SetLexerReader(lexer, nc_ReadMultiLineComment);
-    nc_CallLexerReader(lexer);
-  }
-}
-
-
-
 void nc_ReadMultiLineComment(NCLexer* lexer){
-  if(lexer->curChar == '*'){
-    nc_SetLexerReader(lexer, nc_ReadPotentialMultiLineCommentEnd);
+  while(nc_ReadNextChar(lexer)){
+    if(lexer->curChar == '*'){
+      NABool endFound = NA_FALSE;
+      if(!nc_ReadNextChar(lexer)){
+        endFound = NA_TRUE;
+        // error: comment not properly closed at end of file.
+      }
+
+      if(lexer->curChar == '/'){
+        endFound = NA_TRUE;
+      }
+      
+      if(endFound){
+        nc_CreateParseEntityString(lexer, 2, NC_ENTITY_TYPE_MULTI_LINE_COMMENT);
+        break;
+      }
+    }
   }
 }
 
@@ -86,10 +94,14 @@ void nc_ReadMultiLineComment(NCLexer* lexer){
 void nc_ReadPotentialCommentBegin(NCLexer* lexer){
   if(lexer->curChar == '/'){
     nc_CreateParseEntityString(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
-    nc_SetLexerReader(lexer, nc_ReadSingleLineComment);
+    nc_ReadSingleLineComment(lexer);
+    nc_PopLexerReader(lexer);
+    
   }else if(lexer->curChar == '*'){
     nc_CreateParseEntityString(lexer, 2, NC_ENTITY_TYPE_UNPARSED);
-    nc_SetLexerReader(lexer, nc_ReadMultiLineComment);
+    nc_ReadMultiLineComment(lexer);
+    nc_PopLexerReader(lexer);
+    
   }else{
     nc_PopLexerReader(lexer);
     nc_CallLexerReader(lexer);
@@ -98,65 +110,72 @@ void nc_ReadPotentialCommentBegin(NCLexer* lexer){
 
 
 
-void nc_ReadSingleQuoteContent(NCLexer* lexer){
-  if(lexer->curChar == '\''){
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT);
-    nc_PopLexerReader(lexer);
-  }else if(lexer->curChar == '\\'){
-    nc_PushLexerReader(lexer, nc_ReadEscapeCharacter);
+inline void nc_ReadEscapeCharacter(NCLexer* lexer){
+  if(!nc_ReadNextChar(lexer)){
+    // error: escape character at eof.
+    return;
   }
+
+  // todo: nothing to do right now, as we only consider one single character.
+  // in the future, allow for hexadecimal escape codes.
+}
+
+
+
+void nc_ReadSingleQuoteContent(NCLexer* lexer){
+  while(nc_ReadNextChar(lexer)){
+    if(lexer->curChar == '\''){
+      nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_SINGLE_QUOTE_CONTENT);
+      return;
+    }else if(lexer->curChar == '\\'){
+      // todo: Remember that the string is escaped.
+      nc_ReadEscapeCharacter(lexer);
+    }
+  }
+  // error: single quote not closed at eof.
 }
 
 
 
 void nc_ReadDoubleQuoteContent(NCLexer* lexer){
-  if(lexer->curChar == '\"'){
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT);
-    nc_PopLexerReader(lexer);
-  }else if(lexer->curChar == '\\'){
-    nc_PushLexerReader(lexer, nc_ReadEscapeCharacter);
+  while(nc_ReadNextChar(lexer)){
+    if(lexer->curChar == '\"'){
+      nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT);
+      return;
+    }else if(lexer->curChar == '\\'){
+      // todo: Remember that the string is escaped.
+      nc_ReadEscapeCharacter(lexer);
+    }
   }
-}
-
-
-
-void nc_ReadEscapeCharacter(NCLexer* lexer){
-  // todo: nothing to do right now, as we only consider one single character.
-  // in the future, allow for hexadecimal escape codes.
-  nc_PopLexerReader(lexer);
+  // error: single quote not closed at eof.
 }
 
 
 
 void nc_ReadIdentifier(NCLexer* lexer){
-  if(!((lexer->curChar >= 'a' && lexer->curChar <= 'z')
-    || (lexer->curChar >= 'A' && lexer->curChar <= 'Z')
-    || (lexer->curChar >= '0' && lexer->curChar <= '9')
-    || lexer->curChar == '_')){
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_IDENTIFIER);
-    nc_PopLexerReader(lexer);
-    nc_CallLexerReader(lexer);
+  while(1){
+    NABool charAvailable = nc_ReadNextChar(lexer);
+    if(!charAvailable ||
+      ! ((lexer->curChar >= 'a' && lexer->curChar <= 'z')
+      || (lexer->curChar >= 'A' && lexer->curChar <= 'Z')
+      || (lexer->curChar >= '0' && lexer->curChar <= '9')
+      || lexer->curChar == '_'))
+    {
+      nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_IDENTIFIER);
+      break;
+    }
   }
 }
 
 
 
 void nc_ReadLHS(NCLexer* lexer){
-  if(lexer->curChar == '='){
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_GLOBAL_LHS);
-    nc_SetLexerReader(lexer, nc_ReadRHS);
-  }else if(lexer->curChar == '.'){
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
-    nc_CreateParseEntityType(lexer, NC_ENTITY_TYPE_DOT);
-  }else if((lexer->curChar >= 'a' && lexer->curChar <= 'z') || (lexer->curChar >= 'A' && lexer->curChar <= 'Z')){
-    nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
-    lexer->startPos -= 1;
-    nc_PushLexerReader(lexer, nc_ReadIdentifier);
-    nc_ReadIdentifier(lexer);
-  }else{
+  if(!nc_ReadTokens(lexer)){
     nc_ReadCommon(lexer);
   }
 }
+
+
 
 void nc_ReadRHS(NCLexer* lexer){
   if(lexer->curChar == ';'){
@@ -171,17 +190,44 @@ void nc_ReadLocalScope(NCLexer* lexer){
   nc_ReadCommon(lexer);
 }
 
+NABool nc_ReadTokens(NCLexer* lexer){
+  if(lexer->curChar <= ' '){
+    // do nothing
+    return NA_TRUE;
+    
+  }else if((lexer->curChar >= 'a' && lexer->curChar <= 'z') || (lexer->curChar >= 'A' && lexer->curChar <= 'Z')){
+    lexer->startPos = lexer->filePos - 1;
+    nc_ReadIdentifier(lexer);
+
+    NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
+    const NAString* str = ncGetParseEntityDataConst(naGetListLastConst(entities));
+    printf("Token found: %s\n", naGetStringUTF8Pointer(str));
+    return NA_TRUE;
+  
+  }else if(lexer->curChar == '.'){
+    nc_CreateParseEntityType(lexer, NC_ENTITY_TYPE_DOT);
+    return NA_TRUE;
+
+  }else if(lexer->curChar == '='){
+    nc_SetLexerReader(lexer, nc_ReadRHS);
+    return NA_TRUE;
+  }
+  return NA_FALSE;
+}
+
+
+
 void nc_ReadCommon(NCLexer* lexer){
   if(lexer->curChar == '/'){
     nc_PushLexerReader(lexer, nc_ReadPotentialCommentBegin);
-    
+
   }else if(lexer->curChar == '\''){
     nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
-    nc_PushLexerReader(lexer, nc_ReadSingleQuoteContent);
+    nc_ReadSingleQuoteContent(lexer);
     
   }else if(lexer->curChar == '\"'){
     nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
-    nc_PushLexerReader(lexer, nc_ReadDoubleQuoteContent);
+    nc_ReadDoubleQuoteContent(lexer);
     
   }else if(lexer->curChar == '{'){
     nc_CreateParseEntityString(lexer, 1, NC_ENTITY_TYPE_UNPARSED);
@@ -330,18 +376,18 @@ void ncHandleFile(NCLexer* lexer){
   }
 
   // Go through all LHS entities and parse them.
-  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
-  NAListIterator listIter = naMakeListMutator(entities);
-  while(naIterateList(&listIter)){
-    NCParseEntity* entity = naGetListCurMutable(&listIter);
-    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_IDENTIFIER){
-//      const NCParseEntity* prevEntity = naGetListPrevConst(&listIter);
-      NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
-      ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
-//      int asdf = 1234;
-    }
-  }
-  naClearListIterator(&listIter);
+//  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
+//  NAListIterator listIter = naMakeListMutator(entities);
+//  while(naIterateList(&listIter)){
+//    NCParseEntity* entity = naGetListCurMutable(&listIter);
+//    if(ncGetParseEntityType(entity) == NC_ENTITY_TYPE_IDENTIFIER){
+////      const NCParseEntity* prevEntity = naGetListPrevConst(&listIter);
+//      NCGlobalSymbol* symbol = ncParseGlobalSymbol(ncGetParseEntityData(entity));
+//      ncReplaceParseEntityData(entity, NC_ENTITY_TYPE_GLOBAL_SYMBOL, symbol);
+////      int asdf = 1234;
+//    }
+//  }
+//  naClearListIterator(&listIter);
 }
 
 
@@ -353,3 +399,9 @@ void ncCloseFile(NCLexer* lexer){
   naFree(lexer->fileBuf);
 }
 
+
+
+void printDebugInfo(NCLexer* lexer){
+  NAList* entities = ncGetParseTreeEntities(lexer->parseTree);
+  printf("Entities: %d\n", (int)naGetListCount(entities));
+}

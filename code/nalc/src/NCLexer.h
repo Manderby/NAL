@@ -17,4 +17,6 @@ void ncSetInputPath(NCLexer* lexer, const char* path);
 void ncHandleFile(NCLexer* lexer);
 void ncCloseFile(NCLexer* lexer);
 
+void printDebugInfo(NCLexer* lexer);
+
 #endif // NC_LEXER_INCLUDED

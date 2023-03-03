@@ -30,11 +30,12 @@ int main(int argc, const char * argv[]) {
   
   NADateTime time0 = naMakeDateTimeNow();
 
-  for(int i = 0; i < 1000; i++){
+  for(int i = 0; i < 100000; i++){
     ncSetInputPath(lexer, inPath);
     ncHandleFile(lexer);
     ncCloseFile(lexer);
   }
+  printDebugInfo(lexer);
 
   NADateTime time1 = naMakeDateTimeNow();
   printf("Time difference: %f\n", naGetDateTimeDifference(&time1, &time0));

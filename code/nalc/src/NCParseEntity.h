@@ -44,5 +44,7 @@ NCParseEntityType ncGetParseEntityType(
 
 void* ncGetParseEntityData(
   NCParseEntity* entity);
+const void* ncGetParseEntityDataConst(
+  const NCParseEntity* entity);
 
 #endif // NC_PARSE_ENTITY_INCLUDED

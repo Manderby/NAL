@@ -69,3 +69,7 @@ void* ncGetParseEntityData(NCParseEntity* entity){
   return entity->data;
 }
 
+const void* ncGetParseEntityDataConst(const NCParseEntity* entity){
+  return entity->data;
+}
+
