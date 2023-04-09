@@ -13,7 +13,6 @@ typedef struct NCParseEntity NCParseEntity;
 typedef enum NCParseEntityType{
   NC_ENTITY_TYPE_DOT,
   NC_ENTITY_TYPE_DOUBLE_QUOTE_CONTENT,
-  NC_ENTITY_TYPE_GLOBAL_LHS,
   NC_ENTITY_TYPE_GLOBAL_SYMBOL,
   NC_ENTITY_TYPE_IDENTIFIER,
   NC_ENTITY_TYPE_LINE_COMMENT,
@@ -44,5 +43,7 @@ NCParseEntityType ncGetParseEntityType(
 
 void* ncGetParseEntityData(
   NCParseEntity* entity);
+const void* ncGetParseEntityDataConst(
+  const NCParseEntity* entity);
 
 #endif // NC_PARSE_ENTITY_INCLUDED
