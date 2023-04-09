@@ -21,43 +21,50 @@
 <div class="twoCodes">
   <code>
     NAL:
-    Bottle = BaseType {
-      volume = 1.;         // auto initialized value with auto type
-      string fluid;        // uninitialized value with manual type
-      bool broken = false; // auto initialized value with manual type
-    }
+    
+    // Example uses a base type (just for example purposes):
+    
+    BaseType = module;
+    
+    .drink = f32 (mutable this, f32 percentage);  // pure virtual
+    
+    
+    
+    Bottle = module : BaseType;
+    
+    volume = f32(1.);      // auto initialized value
+    fluid = string;        // uninitialized value
+    broken = bool(false);  // auto initialized value
 
-    mutable MyStruct = BaseType {
-      // ...
-    }
-
-    public
-    constructor(this Bottle mutable, fluid string) {
+    .constructor = (mutable this, fluid string) { // public method
       .fluid = fluid; // dot operator, same as this.fluid
-      // parameters are not mutable, so compiler would warn.
     }
 
-    public
-    destructor(this Bottle mutable) {
+    .create (string fluid) {  // public static function
+      return new Bottle(fluid);
+    }
+
+    .destructor = (mutable Bottle) {
       // do destructor stuff.
     }
     
-    public override
-    drink(this Bottle mutable, percentage f32) f32{
+    .drink = f32 (mutable this, f32 percentage) {
       BaseType.drink(percentage);
       volume *= 1. - percentage;
       return volume;
     }
 
-    protected
-    dropOnTheFloor(this Bottle mutable) {
+    dropOnTheFloor = (mutable this) {
       broken = true;
       volume = 0.;
     }
 
+    ... implementation part
+    
     {
-      bottle Bottle("orange juice");
-      fluidLeft = bottle.drink(0.44);   // = not necessary but allowed.
+      bottle1 = Bottle("orange juice");         // using constructor
+      bottle2 = Bottle.create("orange juice");  // using static method
+      fluidLeft = bottle1.drink(0.44);
     }
   </code>
   <code>
@@ -66,13 +73,13 @@
       BaseType _base;
       float volume;
       const char* fluid;
-      int broken;
+      bool broken;
     };
     
     float _nal_Bottle_constructor(Bottle* this, const char* fluid) {
       this->volume = 1.;
       strncpy(this->fluid, fluid, strlen(fluid)); // todo: compiler must check for const.
-      this->broken = 0;
+      this->broken = false;
     }
     
     float _nal_Bottle_destructor(Bottle* this) {
@@ -86,7 +93,7 @@
     }
 
     float _nal_Bottle_dropOnTheFloor(Bottle* this) {
-      this->broken = 1;
+      this->broken = true;
       this->volume = 0.;
     }
     
@@ -101,36 +108,64 @@
 <h3>Discussion</h3>
 
 <ul>
-<li>Writing a class without modifier denotes a class-like behaviour, meaning all declared members are private. <code>mutable</code> denotes a struct-like behaviour, meaning, all declared members are public</li>
-<li>Methods are defined with Classname.methodname = ... and are always public. <code>this</code> is available implicitely and is const by default. If a mutable method is required, mutable must be written before the Classname.</li>
-<li>Private methods are not defined like such. They are normal functions which define the <code>this</code> variable as either a first parameter or as a local variable.</li>
-<li>Classes declare public and private methods, never protected. Needs discussion, I'm really not sure about it. Is protected necessary or important? Methods without public or protected are automatically private and only have access to the members as long as they are in the same implementation file as the class declaration.</li>
-<li>All methods are automatically virtual. But needs overwrite, otherwise, compiler will emit error. Allow methods to be pure by simply omiting the implementation. But then, <code>this</code> must be declared as first parameter.</li>
+<li><code>this</code> must be declared explicitely as the first parameter.</li>
+<li>public and private functions/methods are defined by the dot:
+
+<code>
+myNormalFunction        = bool (i32 myParameter) {return true;}
+.myPublicStaticFunction = bool (i32 myParameter) {return true;}
+myPrivateMethod         = bool (this, i32 myParameter) {return true;}
+.myPublicMethod         = bool (this, i32 myParameter) {return true;}
+</code>
+
+<li>public and private variables/members are defined by the dot. Static members are always private and have to be explicitely marked with the module keyword:
+
+<code>
+myPrivateMember = bool;  // private member
+.myPublicMember = bool;  // public member
+</code>
+
+<li>There are no static members. There are globals which need to be defined BEFORE any module definition. This means that the terrible, sinful and absolutely dissed global variables are explicitely allowed (because the so sophisticated and praised statics are nothing but private global variables and everybody which says otherwise is lying to itself). Good practice is to never define a public global variable but to define a static function inside a module which returns the private global variable defined in the same implementation file. The reason for allowing any global variable is that a lot of programmers do not want to create complicated modules but just want a simple program that does a job. Also embedded programmers sometimes just want a short, 200 loc program. They do not want and need restrictions. If they want to shoot themselfes into the foot, so be it.
+
+<code>
+// Before any xxx = module definition:
+myPrivateGlobalVariable = bool;
+.myPublicGlobalVariable  = bool;
+</code>
+
+<li>All public methods are automatically virtual. Allow method to be pure by simply omitting the <code>{}</code>.</li>
+<li>Maybe use <code>mut</code> instead of <code>mutable</code>.</li>
 </ul>
 
 
 
-<h2>Interfaces</h2>
+<h2>Extensions</h2>
 
-<p>All types shall be extensible by allowing the programmer to define Interfaces and implement them. When implementing an interface inside of the implementation file where the type is declared, one has access to its private properties. Outside, only the public properties are available.</p>
+<p>All types shall be extensible by allowing the programmer to define Extensions and implement them. When implementing an extension inside of the implementation file where the type is declared, one has access to its private properties. Outside, only the public properties are available.</p>
+
+<p>Advantage: An extension can be added at any place from anybody. It allows for rapid development of new features. A class which is not accessible privately can at least be molded into an interface which supports the methods of the extension. This is as easy as defining a method with a specific type for the <code>this</code> pointer:</p>
 
 <div class="twoCodes">
   <code>
     NAL:
-    public Refillable = {
-      refill (this Refillable mutable);  // no implementation = pure virtual
-    }
     
-    public override  // really necessary?
-    Refillable.refill(this Bottle mutable) {
-      if(broken)
+    Refillable = module;
+    
+    .refill (mutable this);  // no implementation = pure virtual
+    
+    ... extension if in the same file as definition of module Bottle:
+    
+    .refill(mutable Bottle this) {  // this now refers to a Bottle
+      if(broken)                  // access to private member
         printf("Cannot refill.");
       else
-        volume = 1.;
+        volume = 1.;              // access to private member
     }
+        
+    ... implementation part
     
     {
-      bottle Bottle("IceTea");
+      bottle = Bottle("IceTea");
       bottle.drink(.5);
       bottle.refill();
     }
@@ -152,46 +187,6 @@
   </code>
 </div>
 
-<h3>Discussion</h3>
-
-<ul>
-<li>private or protected static pure virtual methods make no sense. They are always public.</li>
-</ul>
-
-
-
-<h2>Static methods</h2>
-
-<p>Static methods can just be declared like this:</p>
-
-<div class="twoCodes">
-  <code>
-    NAL:
-    public MyBottleFactory = {
-      static create () BaseType;  // static
-    }
-
-    MyBottleFactory.create() BaseType {
-      return Bottle();
-    }
-
-  </code>
-  <code>
-    C:
-    BaseType* _nal_MyBottleFactory_create() {
-      BaseType* _nal_Bottle_instance = malloc(sizeof(Bottle));
-      _nal_Bottle_constructor(_nal_Bottle_instance);
-      return _nal_Bottle_instance;
-    }
-  </code>
-</div>
-
-
-<h3>Discussion</h3>
-
-<ul>
-<li>private or protected static methods make no sense. They are always public.</li>
-</ul>
 
 
 </body>

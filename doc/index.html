@@ -13,6 +13,8 @@
 
 <p>NAL shall be a language with the mindeset of C but safe and syntactically improved. Simpler, more readable, more streamlined. More restrictive but more straight-forward.</p>
 
+<p>Goto <a href="https://github.com/Manderby/NAL">GitHub</a> to find this document.</p>
+
 <p>Feel free to contribute. Discussions are what this is all about. It's fun to dream things!</p>
 
 
@@ -20,7 +22,7 @@
 <h2>Target groups</h2>
 
 <ul>
-<li>Target groups: Application programmers, Embedded programmers.</li>
+<li>Target groups: Application programmers, Embedded programmers. Programming beginners.</li>
 <li>Not a target group: System programming. Too complicated. No chance this will ever work completely safe.</li>
 </ul>
 
@@ -39,12 +41,13 @@
 <h2>Quality goals</h2>
 
 <ul>
+<li>The language may improve over time with different versions. The language hasn't got the urge to be backwards compatible but strives to do so.</li>
 <li>Compiler error messages must be easy to read.</li>
-<li>Forward declarations not necessary. C-Header files including comments which are right before defined symbols will be automatically generated upon compilation. Needs proper definition of what is a "header" comment.</li>
-<li>includes. Shall be detected or found by the compiler automatically. Requires common rules on how to find implementation/header files. Maybe belongs to the build system. Needs further thinking.</li>
+<li>Forward declarations not necessary. Someting like C-Header files including comments which are right before defined symbols will be automatically generated upon compilation. Needs proper definition of what is a "header" comment.</li>
+<li>Includes shall be detected or found by the compiler automatically. Requires common rules on how to find implementation/header files. Maybe belongs to the build system. Needs further thinking.</li>
 <li>PIMPL must be prevented. Having no header files would already guarantee this.</li>
-<li>Try to recuce special characters like <code>!~\&lt;&gt;@|&amp;^./?_%</code> as much as possible.</li>
-<li>No implicit constructors, desctructors, converters, ...</li>
+<li>Try to recuce special characters like <code>!~\&lt;&gt;@|&amp;^./?_%</code> as much as possible! If a further version adds extensions, better break an old functionality than adding a new character.</li>
+<li>No implicit constructors, desctructors, converters, ... What you code is what you get.</li>
 <li>Do not allow insecure methods. scanf is one of the culprits.</li>
 </ul>
 
@@ -65,27 +68,23 @@
 <li><a href="bleedkeyword/index.html"><code>bleed</code> Keyword</a></li>
 <li><a href="oop/index.html">OOP</a></li>
 <li><a href="ownership/index.html">Ownership</a></li>
-<li>Parameters passed to a method/function except the <code>this</code> parameter are ALWAYS const. <code>this</code> is const by default but can be made non-const using the <code>mutable</code> keyword. If changing a variable and passing it back to the calling scope is required, use the <code>bleed</code> keyword.</li>
+<li>Parameters passed to a method/function are const by default. All parameters can be made non-const by using the <code>mutable</code> keyword. If changing a variable and passing it back to the calling scope is required, use the <code>bleed</code> keyword.</li>
 <li>Parameter passing:
   <ul>
     <li>simple types like i32, f64, letter, .... are passed as values.</li>
-    <li>Pointers are passed as const pointers and are dereferenced automatically in the inner scope.</li>
-    <li>Structs are passed by default as const addresses and are dereferenced automatically in the inner scope.</li>
-    <li>Pointer parameters might be marked with mutable.</li>
-    <li class="important">Ownership must be transferred upon calling functions. How to do and mark the parameters? Keyword <code>move</code>? Only methods with a this pointer may have transferring parameters? Keyword <code>revoke</code> upon return? Is bleeding maybe the solution. Does a scope can become owner of such variables and when using such variables as parameters, they becom moved automatically and re-bleed automatically?</li>
+    <li>Objects are passed as pointers and are dereferenced automatically in the inner scope.</li>
   </ul></li>
-<li class="important">Add yield and coroutine functionality. Needs a lot of research still as I do not really know anything about it, but it sounde very fascinating.</li>
+<li>For a later version: Add yield and coroutine functionality. Needs a lot of research still as I do not really know anything about it, but it sounds very fascinating.</li>
 </ul>
 
 
 
-<h2>Discussed but needs more thinking.</h2>
+<h2>Other topics</h2>
 
 <ul>
-<li>Ditch Dereference operator. Do it implicitely. Accessing a pointer ALWAYS accesses its contents, never the pointer itself. A const pointer always means: A pointer to some const content.</li>
-<li>no namespaces. Must be discussed further. Helps to find the proper space to look for errors. Needs to be looked at on how to include files. Maybe just one level, not multiple ones.</li>
-<li>Type and variabel declaration/definition: Proposed is to put the variable first, then the type.</li>
-<li>Can we omit the semicolon. Is optional in other languages, but might server better readability. Maybe only omit it for declarartions inside of a struct/class.</li>
+<li>Namespaces. There are two levels. One is the module which can be defined by the module keyword in one file. Another is based on the project system. One defines in a configuration file what modules belong to what package. Loaded packages can be in a custom namespace.</li>
+<li>Discarded: Type and variable declaration/definition was proposed to put the variable first, then the type. But it introduced lots of syntactical problems.</li>
+<li>Discarded: Can we omit the semicolon. Is optional in other languages, but might server better readability. Maybe only omit it for declarartions inside of a struct/class. Discarded because it helps to keep the code deterministic.</li>
 </ul>
 
 
@@ -100,24 +99,16 @@
 <li>New types "f32" and "f64" which repalce float and double.</li>
 <li>New type "bool", new keywords "true" and "false"</li>
 <li>Make array a native type (name under discussion. Some like vec but its frowned upon my most. Namespaces are problematic here as well). Proposition for syntax: array[i32, 6] whereas i32 is a type and 6 is the number of elements in the array. An array is fixed size.</li>
-<li>Type of index variable is size_t in C but becomes [] on NAL. Needs a printf formatter %i.</li>
+<li>Type of index variable is size_t in C needs a counterpart in NAL. Needs a printf formatter %i.</li>
 <li>Make string a native type. Suggestion: Use UTF-8 as default. Can be extended later.</li>
-<li>Proposed type syntax:<br/><code>
-    Type-Syntax: [public|private] [(Parameterlist)] returntype
-    Type-Syntax: [bleed] typename [mutable]
-    Type-Syntax: [basetypename] { class definition }
-    Type-Syntax: enum { enumeration list }
-    
-</code>
 </li>
-<li>Disallow <code>**</code> type</li>
 <li>About structs: Replace it with <a href="oop/index.html">OOP</a> concept.</li>
 <li>All types are automatically typedef'd.</li>
-<li>Casts are NOT allowed. Except: dynamic casts using [someObject CastType]. Requires classes to store some kind of a type id given at runtime. Objects are casted automatically to their base type if the base type is requested. Basic types like f32 need converter methods like .toI32().</li>
+<li>Casts are NOT allowed. Except: dynamic casts using something like [someObject CastType]. Requires classes to store some kind of a type id given at runtime. Objects are casted automatically to their base type if the base type is requested. Basic types like f32 need converter methods like .toI32().</li>
 <li>Templates are not needed. Extending classes with Interfaces is better. Needs discussion.</li>
-<li>Initialization is the same as the assignment operator. Therefore <code>i = i32(5)</code> is the same as <code>i i32(5)</code></li>
+<li>Initialization is the same as the assignment operator. Therefore <code>i = i32(5)</code> is the same as <code>i32 i(5)</code></li>
 <li>nullptr exists. nullptr must be compatible with any object type. Required for dynamic casts.</li>
-<li>Add index/iterator type <code>[]</code>.
+<li>Add index/iterator type. Proposition: <code>[]</code>.
 </li>
 </ul>
 
@@ -125,16 +116,25 @@
 
 <h2>Other ideas</h2>
 <ul>
-<li>Function overloading could be cool. Easy to do with name mangling.</li>
+<li>Function overloading could be cool. Easy to do with name mangling. But adds complexity. Maybe in a later version.</li>
 <li>Disallow standard parameters.</li>
 <li>No ascii mode for file input or output.</li>
 <li>Promote using less <code>{}</code>. Probably not a good idea to remove them all. Make them optional where useful.</li>
 <li>Variables are NOT initialized automatically.</li>
 <li>The operators <code>&amp;=</code> <code>|=</code> and <code>^=</code> should be extended to boolean values.</li>
 <li>The operators <code>&amp;&amp;</code> and <code>||</code> are to be replaced with <code>&amp;</code> and <code>|</code>. Due to strong typing, that should not be an issue</li>
-<li>Add named parameters. Optional.</li>
-<li>Variable shadowing is an error, not a warning. In constructors, the dot operator helps distinguishing between parameter and member.</li>
+<li>The operators <code>==</code> might be replaced with <code>=</code>. Might.</li>
 <li>Assignment operators have no return value. So no <code>a = b = c</code> possible.</li>
+<li>Add named parameters. Optional. Sytax with colons: instead of .dots</li>
+<li>Variable shadowing is an error, not a warning. In constructors, the dot operator helps distinguishing between parameter and member.</li>
+<li>Disallow void*. Add customType with runtime code generation with declareWithType.</li>
+<li>No templates otherwise. Think about it. Have no real idea yet how.</li>
+<li>Variadic initialization. Needs discussion. Probably not</li>
+<li>Variadic arguments ... are not allowed anymore. Define built-in printf.</li>
+<li>exception handling?</li>
+<li>build system included in compiler. Builds "makefiles" automatically. Manages all dependencies of a project.</li>
+<li>compilerflags: target like x86_64-unknow-linux-gnu</li>
+
 </ul>
 
 
@@ -143,46 +143,6 @@
 <li>Syntax examples of why Rust is worse than C: <a href="https://pastebin.com/c7gvYAWC">Link</a>.</li>
 
 
-<code style="white-space:pre">
-
-
-Yet Uncategorized ideas:
-------------------------
-- Allocation can be with or without reference counted.
-- Initialization from Allocation can be like ... = new MyType(...).
-- Pointers are only created with new keyword. Needs thinking. Because We do not see pointers anymore.
-
-MyClass myInstance;
-MyClass myInstance = new MyClass();
-
-- Disallow void*. Add customType with runtime code generation with declareWithType. 
-- No templates otherwise. Think about it. Have no real idea yet how.
-- Adding a list implementation. Potentially not, as it can easily be reprogrammed by the user and there are different implementations with different complexity.
-
-- Variadic initialization. Needs discussion.
-- Variadic arguments ... are not allowed anymore. Define built-in printf.
-- exception handling?
-
-- build system included in compiler. Builds "makefiles" automatically. Manages all dependencies of a project.
-
-- compilerflags: target like x86_64-unknow-linux-gnu
-
-
-</code>
-
-
-
-<code>
-    toplevel-definition: module identifier = moduleidentifier;
-    toplevel-definition: define symbol = constexpression;
-    toplevel-definition: typedef symbol = typeexpression;
-    toplevel-definition: [.] symbol = enum { enumeration list }
-    toplevel-definition: [.] symbol = [mutable] [typename] (parameterlist) [returntype] {functiondefinition}
-    toplevel-definition: [.] symbol = [mutable] modulename {classdeclaration}
-
-    symbol = identifier
-    modulename = identifier
-</code>
 
 
 </body>

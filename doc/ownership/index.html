@@ -34,42 +34,55 @@
 <li>The keyword <b><code>share</code></b> as an operator means: The ownership of the pointer is revoked and shall never again be owned by anyone.</li>
 <li>Not using any of the two keywords at all means: The ownership stays as it was before. The reference count though is handeled just the same as always.</li>
 <li>Both keyword <b><code>own</code></b> and <b><code>share</code></b> can only be used as an operator acting upon an owned variable.</li>
+<li>Static variables are nothing but global variables. Ther are defined BEFORE any module definition in the file. The are always owned by the runtime system and can never be un-owned.</li>
+<li>Static variables can be public (embedded programmers and quick and dirty programmers prefer not to be restricted) but it is good practice to hide them. If public access is really needed, it is strongly advised to use a public static function of a specific module to access them if you want to have them available in other modules. Note that mutable must be specified in order to change the object. Always be aware that a global static variable and a public static function is explicitely public, even when using the module as a third party.</li>
 </ul>
 
 <div class="twoCodes">
   <code>
     NAL:
     
-    public MyClass{
-      myOwnMember MyPointerClass;
-      mySharedMember MyPointerClass share;
-    };
+    myStaticObject = MyPointerClass;  // auto initialized to nullptr
     
-    constructor(this MyClass mutable){
+    MyClass = module;
+    
+    .myOwnMember = MyPointerClass;
+    .mySharedMember = share MyPointerClass;
+    
+    .constructor = (mutable this){
       myOwnMember = new MyPointerClass();
+      mySharedMember = nullptr;
     }
     
-    getShared(this MyClass) MyPointerClass{
+    .getShared = MyPointerClass (this) {
       return mySharedMember;
     }
     
-    getOwned(this MyClass) MyPointerClass{
+    .getOwned = MyPointerClass (this){
+      return myOwnMember;
+    }
+
+    .getSingleton = MyPointerClass (){
+      if(!myStaticObject)
+        myStaticObject = new MyPointerClass();
+        
+      return myStaticObject;
+    }
+    
+    .revokeOwned = own MyPointerClass (mutable this){
       return myOwnMember;
     }
     
-    revokeOwned(this MyClass mutable) MyPointerClass own{
-      return myOwnMember;
-    }
-    
-    setShared(this MyClass mutable, newPointer MyPointerClass){
+    .setShared = (mutable this, MyPointerClass newPointer){
       mySharedMember = newPointer;
     }
     
-    setOwned(this MyClass mutable, newPointer MyPointerClass own){
+    .setOwned = (mutable this, own MyPointerClass newPointer){
       myOwnMember = newPointer;
     }
     
     {
+      myGlobalPointer = MyClass.getSingleton();
       myPointer = new MyPointerClass();
       myObject = new MyClass();
       myObject.setOwned(own myPointer);
