@@ -1,12 +1,15 @@
 .DS_Store
 ._*
 .vs
+.vscode
 *.vcxproj.user
 *xcshareddata*
 *xcuserdata*
 *xcworkspace*
 *.pbxuser
 *.mode2v3
+*Debug/
+*Release/
 CONERR*
 build/
 bin/
