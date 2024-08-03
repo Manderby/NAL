@@ -14,27 +14,6 @@
 
 <p>Remember, NAL shall be "transcodable" to C, therefore in this section, we show how things in NAL can be converted to C if removed or replaced.</p>
 
-<ul>
-<li><a href="#arrowoperator">Arrow operator <code>-&gt;</code></a></li>
-<li><a href="#inttypes"><code>short</code>, <code>long</code>, <code>int</code>, <code>signed</code>, <code>unsigned</code></a></li>
-<li><a href="#char"><code>char</code></a></li>
-<li><a href="#floats"><code>float</code>, <code>double</code> and <code>long double</code></a></li>
-<li><a href="#postfix">Postfix operators <code>++</code> and <code>--</code></a></li>
-<li class="badidea"><a href="#underscore">Underscore <code>_</code> as a symbol character</a></li>
-<li><a href="#dowhile"><code>do-while</code></a></li>
-<li><a href="#comma">Comma operator <code>,</code></a></li>
-<li><a href="#union"><code>union</code> Type</a></li>
-<li><a href="#bitfield">Bitfields</a></li>
-<li><a href="#arraytype">Array type <code>[]</code></a></li>
-<li><a href="#pointerarithmetic">Pointer arithmetics</a></li>
-<li><a href="#generalfor">General <code>for</code> loop declaration.</a></li>
-<li><a href="#goto"><code>goto</code> statement.</a></li>
-<li><a href="#asm"><code>asm</code> statement.</a></li>
-<li><a href="#inline"><code>inline</code> keyword.</a></li>
-<li><a href="#multidecl">Multiple variable declaration with comma</a></li>
-<li><a href="#assignoperators">Operators <code>%=</code>, <code>&gt;&gt;=</code>, <code>&lt;&lt;=</code></a></li>
-</ul>
-
 
 
 <h2 id="arrowoperator">Arrow operator <code>-&gt;</code></h2>
@@ -171,7 +150,11 @@
 
 
 
-<h2 id="postfix">Postfix operators <code>++</code> and <code>--</code></h2>
+<h2 id="postfix">Operators <code>++</code> and <code>--</code></h2>
+
+<p class="important">After discussion, all <code>++</code> and <code>--</code> operators shall be deleted. There is little to gain from it.</p>
+
+<p>Original discussion:</p>
 
 <p>There is a prefix and postfix variant of both <code>++</code> and <code>--</code>. The postfix variant has the semantics of changing the value AFTER its access. We do not allow for these variants anymore.</p>
 

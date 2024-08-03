@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="../css.css"/>
+</head>
+<body>
+
+
+<a href="../index.html">&lt;-- back</a>
+
+<h1>Operator changes</h1>
+
+<p>The goal is to simplify and make way for better syntax.</p>
+
+<p>We remove some of the operators which make no sense or are just too seldom to actually be useful. Also, we want to completely remove the right-to-left precedence as known from C. The following changes need to be made to the operators:</p>
+
+<table>
+<tr><th style="width:300px">Parentheses ()</th><td>Same as before but are disallowed as the outmost operator. Not having right-to-left precedence makes this unnecessary. By disallowing this to be the first operator, one makes way for better syntax and potentially new features.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Field access .</th><td>Was left-to-right before. Stays the same. When used as the first operator, it implies <code>this</code> as its first operand.</td></tr>
+<tr><th>Pointer access -></th><td>Deleted.</td></tr>
+<tr><th>Array access []</th><td>Was left-to-right before. Stays the same. But array becomes an interlan class.</td></tr>
+<tr><th>Function call ()</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Post increment ++</th><td>Delete.</td></tr>
+<tr><th>Post decrement --</th><td>Delete.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>sizeof and sizeof()</th><td>Was right-to-left. Delete the one which is not function-like and use the other one just like any real function. That way, it becomes left-to-right.</td></tr>
+<tr><th>Type casting ()</th><td>Delete. Strong typing it is.</td></tr>
+<tr><th>Pre increment ++</th><td>Delete.</td></tr>
+<tr><th>Pre decrement --</th><td>Delete.</td></tr>
+<tr><th>Address operator &</th><td>Delete.</td></tr>
+<tr><th>Dereference operator *</th><td>Delete.</td></tr>
+<tr><th>Positive operator +</th><td>Was right-to-left but a unary operator. The only other useful operator it can couple with is the negative operator. And those two are commutative, so it makes no difference when they are now considered left-to right. This makes this a compiler problem only to detect the operators properly. Coupling with ! or ~ is semantically questionable and maybe should be warned by the compiler without parentheses.</td></tr>
+<tr><th>Negative operator -</th><td>Same as positive operator.</td></tr>
+<tr><th>Bitwise NOT operator ~</th><td>Same as positive operator but even more should not be mixed with any other unary operator.</td></tr>
+<tr><th>Logical NOT operator !</th><td>Same as bitwise NOT operator.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Multiplication *</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Division /</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Modulo %</th><td>Was left-to-right before. Stays the same. Completely disallow negative values for now, they might be reintroduced in a later version. Add modulo for floating point. Add a warning if it is mixed with multiplication and division as this has no semantical meaning.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Addition +</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Subtraction -</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Shift left &lt;&lt;</th><td>Was left-to-right before. Stays the same. But maybe delete this operator and replace it with a function.</td></tr>
+<tr><th>Shift right &gt;&gt;</th><td>Was left-to-right before. Stays the same. But maybe delete this operator and replace it with a function.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Lower &lt;</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Lower Equal &lt;=</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Greater &gt;</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Greater Equal &gt;=</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Equal ==</th><td>Was left-to-right before. Stays the same.</td></tr>
+<tr><th>Unequal !=</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Bitwise AND &amp;</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Bitwise XOR ^</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Bitwise OR |</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Logical AND &amp;&amp;</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Logical OR ||</th><td>Was left-to-right before. Stays the same.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Condition ?:</th><td>Was right-to-left before. Define it to be non-cascadeable with another condition operator, then left-to-right is no problem anymore. Evaluate condition first, then either second or third operand.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Assignment =</th><td>Was right-to-left before. Define it to have no return value. Cascading of assignments is no longer possible. Note that assigmnent is not the same thing as initialization, therefore it might still be used in an if condition or when defining a new local variable.</td></tr>
+<tr><th>Assignment +=</th><td>Same as normal assignment. These operators simplify programming, therefore they are allowed.</td></tr>
+<tr><th>Assignment -=</th><td>Same as += assignment.</td></tr>
+<tr><th>Assignment *=</th><td>Same as += assignment.</td></tr>
+<tr><th>Assignment /=</th><td>Same as += assignment.</td></tr>
+<tr><th>Assignment %=</th><td>Delete. Too seldom to be useful.</td></tr>
+<tr><th>Assignment &lt;&lt;=</th><td>Delete. Too seldom to be useful.</td></tr>
+<tr><th>Assignment &gt;&gt;=</th><td>Delete. Too seldom to be useful.</td></tr>
+<tr><th>Assignment &amp;=</th><td>Same as += assignment. Explicitely allow it for boolean values.</td></tr>
+<tr><th>Assignment |=</th><td>Same as += assignment. Explicitely allow it for boolean values.</td></tr>
+<tr><th>Assignment ^=</th><td>Same as += assignment. Explicitely allow it for boolean values.</td></tr>
+
+<tr><td colspan="2"><hr/></td></tr>
+
+<tr><th>Sequence ,</th><td>Delete</td></tr>
+
+</table>
+
+</body>
+</html>

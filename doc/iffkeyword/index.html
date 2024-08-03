@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html lang="de">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="../css.css"/>
+</head>
+<body>
+
+
+<a href="../index.html">&lt;-- back</a>
+
+<h1><code>iff</code> Keyword</h1>
+
+<p>The <code>iff</code> keyword is a new concept of NAL which has the following semantic:</p>
+
+<p class="important">Similar to a <code>switch</code> statement, the condition in round parantheses of a <code>iff</code> statement is compared to multiple values. In contrast to <code>switch</code> though, the values of an <code>iff</code> statement are evaluated on runtime (do not need to be constant values) and are executed as successing <code>if</code> and <code>else if</code> conditions whereas in each condition the given condition of the <code>iff</code> statement is compared to the given expression of the case with the equal operator.</p>
+
+<p>Example:</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    iff(reaction.uiElement)(.gridSpacingUnitPt){
+      unit = KARO_LENGTH_UNIT_POINT;
+    }else(.gridSpacingUnitmm){
+      unit = KARO_LENGTH_UNIT_MM;
+    }else(.gridSpacingUnitMil){
+      unit = KARO_LENGTH_UNIT_MIL;
+    }else{
+      unit = KARO_LENGTH_UNIT_POINT;
+    }
+  </code>
+  <code>
+    C:
+      
+    if(reaction.uiElement == con->gridSpacingUnitPt){
+      unit = KARO_LENGTH_UNIT_POINT;
+    }else if(reaction.uiElement == con->gridSpacingUnitmm){
+      unit = KARO_LENGTH_UNIT_MM;
+    }else if(reaction.uiElement == con->gridSpacingUnitMil){
+      unit = KARO_LENGTH_UNIT_MIL;
+    }else{
+      unit = KARO_LENGTH_UNIT_POINT;
+    }
+  </code>
+</div>
+
+<p>There is no <code>break</code> instruction and there are no labels. Therefore, all code parts aside from the conditions in round parentheses behave like normal if statements. This also comprises the behaviour with or without curly brackets.</p>
+
+<p>Further more, this construct could completely replace <code>switch case</code>. If there are constant expressions used, the compiler can automatically switch over to the traditional switch case. But as the fallthrough is still often used and a very practical use of <code>switch case</code>, it might be preferable to continue using it.</p>
+
+<h3>Discussion</h3>
+
+<p>Maybe use <code>when</code> instead of <code>iff</code>. But <code>when</code> might be a varibale name.</p>
+
+
+
+</body>
+</html>

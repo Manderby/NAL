@@ -57,7 +57,24 @@
 <h2>Things to throw away from C</h2>
 
 <ul>
-<li>See <a href="throwaway/index.html">Here</a>.</li>
+<li><a href="throwaway/index.html#arrowoperator">Arrow operator <code>-&gt;</code></a></li>
+<li><a href="throwaway/index.html#inttypes"><code>short</code>, <code>long</code>, <code>int</code>, <code>signed</code>, <code>unsigned</code></a></li>
+<li><a href="throwaway/index.html#char"><code>char</code></a></li>
+<li><a href="throwaway/index.html#floats"><code>float</code>, <code>double</code> and <code>long double</code></a></li>
+<li><a href="throwaway/index.html#postfix">Operators <code>++</code> and <code>--</code></a></li>
+<li class="badidea"><a href="throwaway/index.html#underscore">Underscore <code>_</code> as a symbol character</a></li>
+<li><a href="throwaway/index.html#dowhile"><code>do-while</code></a></li>
+<li><a href="throwaway/index.html#comma">Comma operator <code>,</code></a></li>
+<li><a href="throwaway/index.html#union"><code>union</code> Type</a></li>
+<li><a href="throwaway/index.html#bitfield">Bitfields</a></li>
+<li><a href="throwaway/index.html#arraytype">Array type <code>[]</code></a></li>
+<li><a href="throwaway/index.html#pointerarithmetic">Pointer arithmetics</a></li>
+<li><a href="throwaway/index.html#generalfor">General <code>for</code> loop declaration.</a></li>
+<li><a href="throwaway/index.html#goto"><code>goto</code> statement.</a></li>
+<li><a href="throwaway/index.html#asm"><code>asm</code> statement.</a></li>
+<li><a href="throwaway/index.html#inline"><code>inline</code> keyword.</a></li>
+<li><a href="throwaway/index.html#multidecl">Multiple variable declaration with comma</a></li>
+<li><a href="throwaway/index.html#assignoperators">Operators <code>%=</code>, <code>&gt;&gt;=</code>, <code>&lt;&lt;=</code></a></li>
 </ul>
 
 
@@ -70,6 +87,7 @@
 <li><a href="iffkeyword/index.html"><code>iff</code> Keyword</a></li>
 <li><a href="oop/index.html">OOP</a></li>
 <li><a href="ownership/index.html">Ownership</a></li>
+<li><a href="operatorprecedence/index.html">Changes to operator precedence</a></li>
 <li>Parameters passed to a method/function are const by default. All parameters can be made non-const by using the <code>mutable</code> keyword. If changing a variable and passing it back to the calling scope is required, use the <code>bleed</code> keyword.</li>
 <li>Parameter passing:
   <ul>
@@ -109,7 +127,7 @@
 <li>Casts are NOT allowed. Except: dynamic casts using something like [someObject CastType]. Requires classes to store some kind of a type id given at runtime. Objects are casted automatically to their base type if the base type is requested. Basic types like f32 need converter methods like .toI32().</li>
 <li>Templates are not needed. Extending classes with Interfaces is better. Needs discussion.</li>
 <li>Initialization is the same as the assignment operator. Therefore <code>i = i32(5)</code> is the same as <code>i32 i(5)</code></li>
-<li>nullptr exists. nullptr must be compatible with any object type. Required for dynamic casts.</li>
+<li>nullptr exists. nullptr must be compatible with any object type. Required for dynamic casts. For a later version, allow to find situations where nullptr is expected and where not, maybe with attributes. Therefore: Allow nullptr but give the developer tools to get rid of them alltogether.</li>
 <li>Add index/iterator type. Proposition: <code>[]</code>.
 <li>Enums shall be typed classes. And they shall have predicates (<code>isValid()</code>, <code>isEnabled()</code>...).</code>.
 </li>
