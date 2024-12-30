@@ -12,7 +12,7 @@
 
 <h1>Range <code>for</code></h1>
 
-<p>The general declaration of a <code>for</code> loop in C like <code>for (init; condition; step)</code> will be removed. Instead, <code>for</code> loops shall only (ONLY!) be used for range based loops only:</p>
+<p>The general declaration of a <code>for</code> loop in C like <code>for (init; condition; step)</code> will be removed. Instead, <code>for</code> loops shall only (ONLY!) be used for range based loops:</p>
 
 <div class="twoCodes">
   <code>
@@ -34,6 +34,7 @@
 <li class="important">Maybe even the round parantheses <code>()</code> can be removed? This is how it looks: <code>for i in myArray {...}</code></li>
 <li>Type of Index-Variable is absolutely clear.</li>
 <li>The index variable is ALWAYS defined within the scope (even though it is written in the round parantheses). If the index shall become visible to the outside scope, one can use the <a href="../bleedkeyword/index.html"><code>bleed</code> keyword</a>.</li>
+<li>Another idea would be to extend the use of the <code>break</code> keyword and return for example <code>break i</code>.</li>
 <li>More complex loops have to be programmed with <code>while</code>.</li>
 </ul>
 

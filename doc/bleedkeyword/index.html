@@ -10,7 +10,9 @@
 
 <a href="../index.html">&lt;-- back</a>
 
-<h1><code>bleed</code> Keyword</h1>
+<h1 class="badidea"><code>bleed</code> Keyword</h1>
+
+<p class="important">The <code>bleed</code> semantic has been discarded for now. Do not read. Really. It is old what is written here. Syntax is completely obsolete.</p>
 
 <p>The <code>bleed</code> keyword is a new concept of NAL which has the following semantic:</p>
 
@@ -22,7 +24,7 @@
 
 <ul>
 <li>A symbol is only bleeded one scope outside, not multiple ones. In order to bleed a symbol further outside, it has to be marked with <code>bleed</code> again upon declaration/definition.</li>
-<li>Bleeding a symbol solves one of the ownership problems. When a scope would like to change the content of a variable using a method for example, in C and C+, it provides a "reference" to the object to the method which then changes it. But this disrupts ownership. When a variable though is created inside the method which is then bleeded outwards, the outer scope can simply replace the owned variable with the (bleeded) returned one.</li>
+<li>Bleeding a symbol solves one of the ownership problems. When a scope would like to change the content of a variable using a method for example, in C and C++, it provides a "reference" to the object to the method which then changes it. But this disrupts ownership. When a variable though is created inside the method which is then bleeded outwards, the outer scope can simply replace the owned variable with the (bleeded) returned one.</li>
 </ul>
 
 

@@ -43,9 +43,10 @@
 
 <ul>
 <li>The language may improve over time with different versions. The language hasn't got the urge to be backwards compatible but strives to do so.</li>
+<li>The compiler is called <code>nalc</code> and in a first realization transpiles NAL to C code. In a later version, one can think of compiling directly to binary.</li>
 <li>Compiler error messages must be easy to read.</li>
 <li>Forward declarations not necessary. Someting like C-Header files including comments which are right before defined symbols will be automatically generated upon compilation. Needs proper definition of what is a "header" comment.</li>
-<li>Includes shall be detected or found by the compiler automatically. Requires common rules on how to find implementation/header files. Maybe belongs to the build system. Needs further thinking.</li>
+<li>The compiler shall include a whole build system. Meaning> Includes shall be detected or found by the compiler automatically. Requires common rules on how to find implementation/header files. Needs further thinking mut might be as simple as compiling a whole folder.</li>
 <li>PIMPL must be prevented. Having no header files would already guarantee this.</li>
 <li>Try to recuce special characters like <code>!~\&lt;&gt;@|&amp;^./?_%</code> as much as possible! If a further version adds extensions, better break an old functionality than adding a new character.</li>
 <li>No implicit constructors, desctructors, converters, ... What you code is what you get.</li>
@@ -73,6 +74,8 @@
 <li><a href="throwaway/index.html#goto"><code>goto</code> statement.</a></li>
 <li><a href="throwaway/index.html#asm"><code>asm</code> statement.</a></li>
 <li><a href="throwaway/index.html#inline"><code>inline</code> keyword.</a></li>
+<li><a href="throwaway/index.html#register"><code>register</code> keyword.</a></li>
+<li><a href="throwaway/index.html#volatile"><code>volatile</code> keyword.</a></li>
 <li><a href="throwaway/index.html#multidecl">Multiple variable declaration with comma</a></li>
 <li><a href="throwaway/index.html#assignoperators">Operators <code>%=</code>, <code>&gt;&gt;=</code>, <code>&lt;&lt;=</code></a></li>
 </ul>
@@ -82,8 +85,11 @@
 <h2>New Concepts</h2>
 
 <ul>
+<li>Add an <code>array</code> keyword for a built-in array class. to be defined</li>
+<li>Add an <code>string</code> keyword for a built-in string class. to be defined</li>
 <li><a href="rangefor/index.html">Range <code>for</code></a></li>
-<li><a href="bleedkeyword/index.html"><code>bleed</code> Keyword</a></li>
+<li><a href="bleedkeyword/index.html" class="badidea"<code>bleed</code> Keyword</a></li>
+<li>Use <code>break X;</code> to return an index out of a for loop which then can be assigned using <code>i32 = for()...</code></li>
 <li><a href="iffkeyword/index.html"><code>iff</code> Keyword</a></li>
 <li><a href="oop/index.html">OOP</a></li>
 <li><a href="ownership/index.html">Ownership</a></li>

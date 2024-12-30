@@ -18,24 +18,26 @@
 
 <h2 id="arrowoperator">Arrow operator <code>-&gt;</code></h2>
 
-<p>Compilers know the type of a value and hence can automatically decide whether it is a pointer or not. No need to have two separate operators <code>-&gt;</code> and <code>.</code> therefore. To make code look like other programming languages, we favor the dot operator. Translating to C means automatically replacing the dot with an arrow if necessary.</p>
+<p>Compilers know the type of a value when transcoding to C and hence can automatically decide whether it is a pointer or not. No need to have two separate operators <code>-&gt;</code> and <code>.</code> therefore. To make code look like other programming languages, we favor the dot operator.</p>
 
+<!--
 <div class="twoCodes">
   <code>
     NAL:
-    myValue = MyType;
-    myPointer = *MyType; 
+    MyClass myObject;
+    myObject = new MyClass(); 
     myValue.memberName;
     myPointer.memberName;
   </code>
   <code>
     C:
-    MyType myValue;
+    i64 myValue;
     MyType* myPointer;
     myValue.memberName;
     myPointer->memberName;
   </code>
 </div>
+-->
 
 <h3>Discussion</h3>
 
@@ -87,12 +89,6 @@
   </code>
 </div>
 
-
-<h3>Discussion</h3>
-
-<ul>
-<li>Pros, Cons...</li>
-</ul>
 
 
 
@@ -165,6 +161,7 @@
 <li>Postfix operators are used favourably with pointer arithmetics. As we can not allow pointer arithmetics anymore, there is one more reason to let go.</li>
 <li>It is not hard for a programmer to rewrite a line of code such that a postfix operator is not necessary anymore.</li>
 <li>In C++, the postfix operator usually is also frowned upon as it complicates operator overloading.</li>
+<li><code>++</code> and <code>--</code> is often used in C for the <code>for</code> loop. But as we change the <code>for</code> loop anyway, there is one less reason to have these operators.</li>
 </ul>
 
 
@@ -189,12 +186,12 @@
 
 <h2 id="dowhile"><code>do-while</code></h2>
 
-<p>Replace <code>do-while</code> with a new keyword <code>dowhile</code>. Put condition before <code>{}</code> Block.</p>
+<p>Replace <code>do-while</code> with a new keyword <code>until</code>. Put condition before <code>{}</code> Block. This needs a new thinking bucause the condition is inverted. But it is more intuitive and corresponds more closely to the semantic such a loop represents.</p>
 
 <div class="twoCodes">
   <code>
     NAL:
-    dowhile(condition) {
+    until(condition) {
       ...
     }
   </code>
@@ -202,7 +199,7 @@
     C:
     do {
       ...
-    } while (condition)
+    } while (!condition)
   </code>
 </div>
 
@@ -210,6 +207,8 @@
 
 <ul>
 <li>Original idea was to remove <code>do-while</code> completely without replacement.</li>
+<li>Other idea was to replace it with an <code>dowhile</code> loop but without inverted condition.</li>
+<li><code>until</code> is used in other languages but just as an inversion of a normal <code>while</code> loop, so that might be a problem.</li>
 </ul>
 
 
@@ -221,7 +220,7 @@
 <h3>Discussion</h3>
 
 <ul>
-<li>Pros, Cons...</li>
+<li>The comma operator is sometimes used in C for the <code>for</code> loop. But as we change the <code>for</code> loop anyway, there is one less reason to have these operators.</li>
 </ul>
 
 
@@ -234,7 +233,7 @@
 
 <ul>
 <li>Unions might be handy when working with network protocols. But as NAL shall not target system programmers, that is not really an issue.</li>
-<li>Unions can be usefule to have either a const or non-const member (as done in NALib). But that might become obsolete with a better type system.</li>
+<li>Unions can be useful to have either a const or non-const member (as done in NALib). But that might become obsolete with a better type system.</li>
 </ul>
 
 
@@ -261,13 +260,14 @@
 <ul>
 <li>The <code>[]</code> type evaluates to a pointer to the first element of an array. That has no purpose if we aren't allowing pointer arithmetics anymore.</li>
 <li>Arrays must become safe.</li>
+<li>When arrays are gone, so are strings. It becomes its own class. Maybe built in to the language. Deal with it.</li>
 </ul>
 
 
 
 <h2 id="pointerarithmetic">Pointer arithmetics</h2>
 
-<p>Pointer arithmetics are inherently unsafe. We need to get rid of it. The only real thing which needs to be replaced it the <a hreaf="#arraytype">array type <code>[]</code></a> which can be replaced by a bilt-in type <code>array</code>. A special new index type <code>[]</code> though will be put in place this handles everything concerning iteration.</p>
+<p>Pointer arithmetics are inherently unsafe. We need to get rid of it. The only real thing which needs to be replaced is the <a hreaf="#arraytype">array type <code>[]</code></a> which can be replaced by a built-in type <code>array</code>.</p>
 
 <h3>Discussion</h3>
 
@@ -327,6 +327,30 @@
 
 
 
+<h2 id="register"><code>register</code> keyword</h2>
+
+<p>The <code>register</code> keyword shall be removed completely without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>NAL is not targeted to system programmers.</li>
+</ul>
+
+
+
+<h2 id="volatile"><code>volatile</code> keyword</h2>
+
+<p>The <code>volatile</code> keyword shall be removed completely without replacement.</p>
+
+<h3>Discussion</h3>
+
+<ul>
+<li>NAL is not targeted to system programmers.</li>
+</ul>
+
+
+
 <h2 id="multidecl">Multiple variable declaration with comma</h2>
 
 <p>Do not define multiple variables with commmas <code>,</code>.</p>
@@ -351,7 +375,7 @@
 <li><code>%=</code> makes no sense mathematically.</li>
 <li>Shift operators are just too seldom.</li>
 <li>The operators <code>+=</code> <code>-=</code> <code>*=</code> and <code>/=</code> are usefule and simplify programming. Leave them.</li>
-<li>The operators <code>&amp;=</code> <code>|=</code> and <code>^=</code> are usefule and simplify programming flags and bools. Leave them</li>
+<li>The operators <code>&amp;=</code> <code>|=</code> and <code>^=</code> are useful and simplify programming flags and bools. Leave them</li>
 </ul>
 
 
