@@ -13,6 +13,7 @@
 <h1>Object oriented Programming</h1>
 
 <p>OOP in NAL shall be single inheritance.</p>
+<p>There is no need for a <code>new</code> keyword</p>
 
 
 
@@ -21,53 +22,67 @@
 <div class="twoCodes">
   <code>
     NAL:
-    
-    // Example uses a base type (just for example purposes):
-    
-    BaseType = module;
-    
-    .drink = f32 (mutable this, f32 percentage);  // pure virtual
-    
-    
-    
-    Bottle = module : BaseType;
-    
-    volume = f32(1.);      // auto initialized value
-    fluid = string;        // uninitialized value
-    broken = bool(false);  // auto initialized value
+    // Before any module keyword, all declarations and definitions belong to the
+    // global namespace.
 
-    .constructor = (mutable this, fluid string) { // public method
-      .fluid = fluid; // dot operator, same as this.fluid
+    i32 .beersOnAWall = 99; // private global variable.
+       
+       
+    // After the following line, all declarations and definitions belong to
+    // the BaseType:
+    module BaseType;
+    
+    f32 .drink(mutable this, f32 percentage);  // pure virtual (semicolon)
+    
+    i32 .getBeerCount() { return beersOnAWall; }  // static function.
+    
+    
+    // After the following line, all declarations and definitions belong to
+    // the Bottle (which inherits from BaseType):
+    module Bottle : BaseType;
+    
+    f32    .volume = 1.f;     // auto initialized value
+    string .fluid;            // uninitialized value
+    bool   .broken = false;   // auto initialized value
+
+    void init(mutable this, string .fluid) {    // public method (without dot)
+      fluid = .fluid;      // dot to distinguish between member and parameter
     }
 
-    .create (string fluid) {  // public static function
-      return new Bottle(fluid);
+    own Bottle create(string fluid) {      // public static function
+      Bottle bottle(fluid);
+      return bottle;
     }
 
-    .destructor = (mutable Bottle) {
+    void destructor(mutable this) {            // public destructor
       // do destructor stuff.
     }
     
-    .drink = f32 (mutable this, f32 percentage) {
-      BaseType.drink(percentage);
+    f32 getFillStatus(this) {return volume;}    // const method.
+
+    f32 drink(mutable this, f32 percentage) {
+      BaseType.drink(percentage);       // will cause error as pure virtual.
       volume *= 1. - percentage;
       return volume;
     }
 
-    dropOnTheFloor = (mutable this) {
+    void dropOnTheFloor(mutable this) {
       broken = true;
       volume = 0.;
     }
 
     ... implementation part
     
+    main (...)
     {
-      bottle1 = Bottle("orange juice");         // using constructor
-      bottle2 = Bottle.create("orange juice");  // using static method
-      fluidLeft = bottle1.drink(0.44);
+      Bottle bottle1("orange juice");                  // using constructor
+      Bottle bottle2 = Bottle.create("orange juice");  // using static method
+      f32 fluidLeft = bottle1.drink(0.44f);
     }
+    
   </code>
   <code>
+  <!--
     C:
     struct Bottle {
       BaseType _base;
@@ -102,38 +117,39 @@
       _nal_Bottle_constructor(bottle, "orange juice");
       float fluidLeft = _nal_Bottle_drink(&bottle, 4.44f);
     }
+    -->
   </code>
 </div>
 
 <h3>Discussion</h3>
 
 <ul>
-<li><code>this</code> must be declared explicitely as the first parameter.</li>
+<li><code>this</code> must be declared explicitely as the first parameter. It can be const (no keyword needed) or <code>mutable</code></li>
 <li>public and private functions/methods are defined by the dot:
 
 <code>
-myNormalFunction        = bool (i32 myParameter) {return true;}
-.myPublicStaticFunction = bool (i32 myParameter) {return true;}
-myPrivateMethod         = bool (this, i32 myParameter) {return true;}
-.myPublicMethod         = bool (this, i32 myParameter) {return true;}
+bool myNormalFunction         (i32 myParameter) {return true;}
+bool .myPrivateStaticFunction (i32 myParameter) {return true;}
+bool myPublicMethod           (this, i32 myParameter) {return true;}
+bool .myPrivateMethod         (this, i32 myParameter) {return true;}
 </code>
 
-<li>public and private variables/members are defined by the dot. Static members are always private and have to be explicitely marked with the module keyword:
+<li>public and private variables/members are defined by the dot:
 
 <code>
-myPrivateMember = bool;  // private member
-.myPublicMember = bool;  // public member
+bool myPublicMember   = bool;  // public member
+bool .myPrivateMember = bool;  // private member
 </code>
 
 <li>There are no static members. There are globals which need to be defined BEFORE any module definition. This means that the terrible, sinful and absolutely dissed global variables are explicitely allowed (because the so sophisticated and praised statics are nothing but private global variables and everybody which says otherwise is lying to itself). Good practice is to never define a public global variable but to define a static function inside a module which returns the private global variable defined in the same implementation file. The reason for allowing any global variable is that a lot of programmers do not want to create complicated modules but just want a simple program that does a job. Also embedded programmers sometimes just want a short, 200 loc program. They do not want and need restrictions. If they want to shoot themselfes into the foot, so be it.
 
 <code>
 // Before any xxx = module definition:
-myPrivateGlobalVariable = bool;
-.myPublicGlobalVariable  = bool;
+.myPrivateGlobalVariable = bool;
+myPublicGlobalVariable  = bool;
 </code>
 
-<li>All public methods are automatically virtual. Allow method to be pure by simply omitting the <code>{}</code>.</li>
+<li>All public methods are automatically virtual. Allow method to be pure by omitting the <code>{}</code> and using a semicolon <code>;</code>.</li>
 <li>Maybe use <code>mut</code> instead of <code>mutable</code>.</li>
 </ul>
 
@@ -149,17 +165,19 @@ myPrivateGlobalVariable = bool;
   <code>
     NAL:
     
-    Refillable = module;
+    <!--
+    module Refillable;
     
     .refill (mutable this);  // no implementation = pure virtual
     
+    -->
     ... extension if in the same file as definition of module Bottle:
     
     .refill(mutable Bottle this) {  // this now refers to a Bottle
       if(broken)                  // access to private member
         printf("Cannot refill.");
       else
-        volume = 1.;              // access to private member
+        volume = 1.f;              // access to private member
     }
         
     ... implementation part
@@ -171,12 +189,13 @@ myPrivateGlobalVariable = bool;
     }
   </code>
   <code>
+    <!--
     C:
     float _nal_Refillable_extends_Bottle_refill(Bottle* this) {
       if(this->broken)
         printf("Cannot refill.");
       else
-        this->volume = 1.;
+        this->volume = 1.f;
     }
 
     {
@@ -184,6 +203,7 @@ myPrivateGlobalVariable = bool;
       ... // instantiation as above + calling drink
       _nal_Refillable_extends_Bottle_refill(&bottle);
     }
+    -->
   </code>
 </div>
 

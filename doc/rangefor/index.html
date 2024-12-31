@@ -31,12 +31,85 @@
 
 <ul>
 <li>Syntax is similar to other languages like Python</li>
-<li class="important">Maybe even the round parantheses <code>()</code> can be removed? This is how it looks: <code>for i in myArray {...}</code></li>
-<li>Type of Index-Variable is absolutely clear.</li>
-<li>The index variable is ALWAYS defined within the scope (even though it is written in the round parantheses). If the index shall become visible to the outside scope, one can use the <a href="../bleedkeyword/index.html"><code>bleed</code> keyword</a>.</li>
-<li>Another idea would be to extend the use of the <code>break</code> keyword and return for example <code>break i</code>.</li>
+<li class="badidea">Maybe even the round parantheses <code>()</code> can be removed? This is how it looks: <code>for i in myArray {...}</code></li>
+<li><code>i</code> is always an index. If an actual value of an array needs to be addressed, one still needs to call the array operator (or however it is called).</li>
 <li>More complex loops have to be programmed with <code>while</code>.</li>
 </ul>
+
+<h3>What is the type of the index variable?</h3>
+
+<p>While in C, the type <code>size_t</code> is commonly used, a keyword without underscore is preferred explicitely providing functionality for index counting. Proposition: <code>idx</code>, <code>[]</code>, <code>counter</code>, <code>sizet</code>, <code>tick</code></p>
+
+<p>That type shall provide functionality to define an undefined index, like an over- and underflow. How is not yet solved.</p>
+
+
+<h3>Using the index variable outside of the loop</h3>
+
+<p>The index variable is always defined inside the loop. But sometimes, one wants to know the resulting index for use after the loop. In such a case, the retulting index will be returned from the for-loop like so:</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    i32 lastIndex = for (i in [5 .. n]) {...}
+  </code>
+  <code>
+    C:
+    i32 lastIndex = 5;
+    for (size_t i = 5; i < n; ++i) {
+      ...
+      lastIndex = (i32)i;
+    }
+  </code>
+</div>
+
+
+<p>If the <code>break</code> statement is used, the current value of the index variable will be returned:</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    i32 lastIndex = for (i in [5 .. n]) {
+      ...
+      if(i == 20) { break; }
+    }
+  </code>
+  <code>
+    C:
+    i32 lastIndex = 5;
+    for (size_t i = 5; i < n; ++i) {
+      ...
+      if(i == 20) {
+        lastIndex = (i32)i;
+        break;
+      }
+      lastIndex = (i32)i;
+    }
+  </code>
+</div>
+
+<p>If desired, with a <code>break</code> statement, the programmer may return a custom index like so:</p>
+
+<div class="twoCodes">
+  <code>
+    NAL:
+    i32 lastIndex = for (i in [5 .. n]) {
+      ...
+      if(i == 20) { break 111; }
+    }
+  </code>
+  <code>
+    C:
+    i32 lastIndex = 5;
+    for (size_t i = 5; i < n; ++i) {
+      ...
+      if(i == 20) {
+        lastIndex = (i32)111;
+        break;
+      }
+      lastIndex = (i32)i;
+    }
+  </code>
+</div>
 
 
 
